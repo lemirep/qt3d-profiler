@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Thread.qml</file>
+        <file>Frame.qml</file>
+        <file>Job.qml</file>
+        <file>TraceSelector.qml</file>
+        <file>FrameJobView.qml</file>
+        <file>StyledRectText.qml</file>
+        <file>JobHighlight.qml</file>
+    </qresource>
+</RCC>
