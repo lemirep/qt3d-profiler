@@ -95,6 +95,8 @@ Window {
             return "#F7E999"
         case Singleton.FrustumCulling:
             return "#1DABB8"
+        case Singleton.LightGathering:
+            return "#F9690E"
         default:
             return "red"
         }
@@ -141,8 +143,10 @@ Window {
             return "GenericLambdaSync"
         case Singleton.FrustumCulling:
             return "FrustumCulling"
+        case Singleton.LightGathering:
+            return "LightGathering"
         default:
-            return "red"
+            return "Unknown"
         }
     }
 

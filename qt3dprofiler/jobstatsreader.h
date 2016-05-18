@@ -45,7 +45,8 @@ class JobStatsReader : public QObject
     Q_PROPERTY(int threadCount READ threadCount NOTIFY threadCountChanged)
 public:
     enum JobType {
-        LoadBuffer = 0,
+        Unknown = 0,
+        LoadBuffer,
         FrameCleanup,
         FramePreparation,
         CalcBoundingVolume,
@@ -64,6 +65,7 @@ public:
         RenderViewBuilder,
         GenericLambda,
         FrustumCulling,
+        LightGathering,
         MaxType
     };
     Q_ENUM(JobType)
