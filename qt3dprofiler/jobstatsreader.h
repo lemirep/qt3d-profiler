@@ -36,49 +36,27 @@
 #include <QAbstractListModel>
 
 class FrameModel;
+class JobTypeInfoModel;
 
 class JobStatsReader : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QAbstractListModel *jobStatsModel READ jobStatsModel NOTIFY jobStatsModelChanged)
+    Q_PROPERTY(QAbstractListModel *jobTypeInfoModel READ jobTypeInfoModel CONSTANT)
     Q_PROPERTY(float msecToPixelScale READ msecToPixelScale WRITE setMsecToPixelScale NOTIFY msecToPixelScaleChanged)
     Q_PROPERTY(int threadCount READ threadCount NOTIFY threadCountChanged)
 public:
-    enum JobType {
-        Unknown = 0,
-        LoadBuffer,
-        FrameCleanup,
-        FramePreparation,
-        CalcBoundingVolume,
-        CalcTriangleVolume,
-        LoadGeometry,
-        LoadScene,
-        LoadTextureData,
-        PickBoundingVolume,
-        RenderView,
-        UpdateTransform,
-        UpdateBoundingVolume,
-        FrameSubmission,
-        LayerFiltering,
-        EntityComponentTypeFiltering,
-        MaterialParameterGathering,
-        RenderViewBuilder,
-        GenericLambda,
-        FrustumCulling,
-        LightGathering,
-        MaxType
-    };
-    Q_ENUM(JobType)
-
     JobStatsReader();
     ~JobStatsReader();
 
     Q_INVOKABLE void readTraceFile(const QUrl &fileUrl);
 
     QAbstractListModel *jobStatsModel() const;
+    QAbstractListModel *jobTypeInfoModel() const;
     float msecToPixelScale() const;
     int threadCount() const;
     void setMsecToPixelScale(float scale);
+
 
 Q_SIGNALS:
     void jobStatsModelChanged();
@@ -86,8 +64,13 @@ Q_SIGNALS:
     void threadCountChanged();
 
 private:
-    QScopedPointer<FrameModel> m_model;
+    QScopedPointer<FrameModel> m_jobStatsModel;
+    QScopedPointer<JobTypeInfoModel> m_jobTypeInfoModel;
     float m_msecToPixelScale;
     int m_threadCount;
+
+    void parseConfigFile(const QString &filePath);
+    QHash<int, QString> m_jobTypeToNameTable;
+    QHash<int, QColor> m_jobTypeToColorTable;
 };
 #endif // JOBSTATSREADER_H

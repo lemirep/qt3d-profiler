@@ -40,7 +40,8 @@ Rectangle {
     readonly property real nsecToMSec: 0.000001
     readonly property real duration: (end - start) * nsecToMSec
     property bool collapsed: false
-    color: mainRoot.colorForType(type)
+    property string name
+
     height: frameView.barHeight * 0.5 - 1
     y: model.index % 2 ? frameView.barHeight * 0.5 : 1
     readonly property int maxWidth: Math.max(Singleton.msecToPixelScale * duration, 2)
@@ -80,6 +81,7 @@ Rectangle {
             frameView.jobHighLight.type = root.type
             frameView.jobHighLight.instance = root.instance
             frameView.jobHighLight.duration = root.duration
+            frameView.jobHighLight.name = root.name
         }
         onExited: {
             frameView.jobHighLight.visible = false

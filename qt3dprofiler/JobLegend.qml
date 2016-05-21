@@ -29,23 +29,35 @@
 ****************************************************************************/
 
 import QtQuick 2.5
+import QtQuick.Dialogs 1.0
+import QtQuick.Window 2.0
+import QtQuick.Controls 1.4
+import QtQuick.Controls.Styles 1.4
+import Profiler 1.0
 
-Item {
-    property alias jobModel: jobRepeater.model
-    property int threadId
-    height: childrenRect.height
-    width: childrenRect.width
-    y: threadId * 55
+Grid {
+    id: g
+    spacing: 20
 
     Repeater {
-        id: jobRepeater
-        Job {
-            start: model.FrameStart
-            end: model.FrameEnd
-            type: model.Type
-            instance: model.InstanceId
-            color: model.Color
-            name: model.Name
+        model: Singleton.jobTypeInfoModel
+        Row {
+            spacing: 5
+            Rectangle {
+                id: colorIndicator
+                color: model.Color
+                width: 15
+                height: 15
+                gradient: Gradient {
+                    GradientStop { color: colorIndicator.color; position: 0.0}
+                    GradientStop { color: Qt.darker(colorIndicator.color, 1.25); position: 1.0}
+                }
+            }
+            Text {
+                anchors.verticalCenter: colorIndicator.verticalCenter
+                text: model.Name
+                color: "white"
+            }
         }
     }
 }

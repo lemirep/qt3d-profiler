@@ -39,6 +39,7 @@ Item {
     property real duration
     property int instance
     property color color
+    property alias name: nameDisplayer.text
 
     width: childrenRect.width
     height: childrenRect.height
@@ -68,8 +69,9 @@ Item {
             text: "Type: "
         }
         Text {
+            id: nameDisplayer
             color: "white"
-            text: mainRoot.jobNameForType(type)
+            text: name
         }
         Text {
             color: "white"

@@ -8,5 +8,7 @@
         <file>FrameJobView.qml</file>
         <file>StyledRectText.qml</file>
         <file>JobHighlight.qml</file>
+        <file>config.json</file>
+        <file>JobLegend.qml</file>
     </qresource>
 </RCC>

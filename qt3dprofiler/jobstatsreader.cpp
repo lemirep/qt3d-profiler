@@ -33,6 +33,10 @@
 #include <QFile>
 #include <QUrl>
 #include <QSharedPointer>
+#include <QJsonDocument>
+#include <QJsonArray>
+#include <QJsonObject>
+#include <QColor>
 #include <QDebug>
 
 //////////// Structs for Binary Format ///////////////
@@ -75,6 +79,8 @@ public:
     JobRunStats m_jobStats;
     qint64 m_frameStart;
     qint64 m_frameEnd;
+    QString m_name;
+    QColor m_color;
 };
 
 class Thread
@@ -108,7 +114,9 @@ public:
         End,
         Duration,
         FrameStart, // Relative to the total duration of a frame
-        FrameEnd
+        FrameEnd,
+        Name,
+        Color
     };
     Q_ENUM(Roles)
 };
@@ -156,6 +164,10 @@ QVariant Job::data(int role) const
         return m_frameStart;
     case JobModel::FrameEnd:
         return m_frameEnd;
+    case JobModel::Name:
+        return m_name;
+    case JobModel::Color:
+        return m_color;
     default:
         return QVariant();
     }
@@ -191,20 +203,98 @@ QVariant Frame::data(int role) const
     }
 }
 
+//// MODELS FOR DISPLAY PURPOSES ONLY
+
+struct JobInfo
+{
+    QVariant data(int role) const;
+
+    int m_typeId;
+    QString m_name;
+    QColor m_color;
+};
+
+class JobTypeInfoModel : public ListModel<JobInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        TypeId = Qt::UserRole + 1,
+        Name,
+        Color
+    };
+    Q_ENUM(Roles)
+};
+
+
+QVariant JobInfo::data(int role) const
+{
+    switch (role) {
+    case JobTypeInfoModel::TypeId:
+        return m_typeId;
+    case JobTypeInfoModel::Name:
+        return m_name;
+    case JobTypeInfoModel::Color:
+        return m_color;
+    default:
+        return QVariant();
+    }
+}
+
+
+//// MAIN CLASS
+
 JobStatsReader::JobStatsReader()
     : QObject()
-    , m_model(new FrameModel)
+    , m_jobStatsModel(new FrameModel)
+    , m_jobTypeInfoModel(new JobTypeInfoModel)
     , m_msecToPixelScale(1000.0f)
     , m_threadCount(0)
-{}
+{
+    parseConfigFile(QLatin1Literal(":/config.json"));
+}
 
 JobStatsReader::~JobStatsReader()
 {}
 
+void JobStatsReader::parseConfigFile(const QString &filePath)
+{
+    QFile configFile(filePath);
+    if (!configFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Failed to open configuration file";
+        return;
+    }
+
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(configFile.readAll());
+    if (jsonDoc.isNull() || !jsonDoc.isObject()) {
+        qWarning() << "Malformed configuration file";
+        return;
+    }
+
+    QJsonObject root = jsonDoc.object();
+    std::vector<JobInfo> jobInfo;
+    const QJsonArray aspects = root.value(QLatin1String("aspects")).toArray();
+    for (const QJsonValue &aspectValue : aspects) {
+        const QJsonObject aspectObj = aspectValue.toObject();
+        const QJsonArray jobs = aspectObj.value(QLatin1String("jobs")).toArray();
+        for (const QJsonValue &jobValue : jobs) {
+            const QJsonObject job = jobValue.toObject();
+            const int typeId = job.value(QLatin1String("type")).toInt();
+            const QColor jobColor(job.value(QLatin1String("color")).toString());
+            const QString jobName = job.value(QLatin1String("name")).toString();
+            m_jobTypeToColorTable.insert(typeId, jobColor);
+            m_jobTypeToNameTable.insert(typeId, jobName);
+            jobInfo.push_back({typeId, jobName, jobColor});
+        }
+    }
+    // Build JobTypeModel based on the above
+    m_jobTypeInfoModel->insertRows(jobInfo);
+}
+
 void JobStatsReader::readTraceFile(const QUrl &fileUrl)
 {
     QFile file(fileUrl.toLocalFile());
-    m_model->clear();
+    m_jobStatsModel->clear();
     if (file.open(QFile::ReadOnly)) {
         const int sizeOfHeader = sizeof(FrameHeader);
         const int sizeOfJob = sizeof(JobRunStats);
@@ -217,7 +307,7 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
         // Check file is at least as long as what header says
         while ((readSize = file.read(headerBuffer.data(), sizeOfHeader)) == sizeOfHeader) {
             FrameHeader *header = reinterpret_cast<FrameHeader *>(headerBuffer.data());
-            //                qDebug() << "Read Header (id:" << header->frameId << "; jobs:" << header->jobCount << ")";
+
             // Read commands
             uint c = 0;
             std::vector<Job> jobs;
@@ -225,8 +315,9 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 JobRunStats *jobStat = reinterpret_cast<JobRunStats *>(jobBuffer.data());
                 Job job;
                 job.m_jobStats = *jobStat;
+                job.m_color = m_jobTypeToColorTable.value(jobStat->jobId.typeAndInstance[0], QColor(Qt::red));
+                job.m_name = m_jobTypeToNameTable.value(jobStat->jobId.typeAndInstance[0], QLatin1String("Unknown"));
                 jobs.push_back(job);
-                //                    qDebug() << "Read Job (id:" << jobStat->jobId.typeAndInstance[0] << " type: " << jobStat->jobId.typeAndInstance[1] << " start: " << jobStat->startTime << " end: " << jobStat->endTime << " threadId: " << jobStat->threadId << ")";
                 ++c;
             }
 
@@ -261,12 +352,6 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 job.m_frameEnd = job.m_jobStats.endTime - startTime;
             }
 
-//            qDebug() << startTime << endTime << endTime - startTime;
-
-            //                qDebug() << "Sorted 2";
-            //                for (Job jb : jobs)
-            //                    qDebug() << "Read Job (id:" << jb.m_jobStats.jobId.typeAndInstance[0] << " type: " << jb.m_jobStats.jobId.typeAndInstance[1] << " start: " << jb.m_jobStats.startTime << " end: " << jb.m_jobStats.endTime << " threadId: " << jb.m_jobStats.threadId << ")";
-
             Frame f;
             f.m_header = std::move(*header);
             f.m_threadModel.reset(new ThreadModel);
@@ -291,7 +376,7 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 f.m_threadModel->insertRow(t);
             }
 
-            m_model->insertRow(f);
+            m_jobStatsModel->insertRow(f);
         } // Repeat
         m_threadCount = threadIds.size();
         emit threadCountChanged();
@@ -304,7 +389,12 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
 
 QAbstractListModel *JobStatsReader::jobStatsModel() const
 {
-    return m_model.data();
+    return m_jobStatsModel.data();
+}
+
+QAbstractListModel *JobStatsReader::jobTypeInfoModel() const
+{
+    return m_jobTypeInfoModel.data();
 }
 
 float JobStatsReader::msecToPixelScale() const

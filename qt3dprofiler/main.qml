@@ -39,7 +39,7 @@ Window {
     id: mainRoot
     visible: true
     width: Screen.desktopAvailableWidth
-    height: Screen.desktopAvailableWidth
+    height: Screen.desktopAvailableHeight
     color: "#22313f"
 
     Text {
@@ -54,101 +54,7 @@ Window {
         text: "Qt3D Profiler"
     }
 
-    function colorForType(type)
-    {
-        switch (type) {
-        case Singleton.LoadBuffer:
-            return "#1abc9c"
-        case Singleton.FrameCleanup:
-            return "#2ecc71"
-        case Singleton.FramePreparation:
-            return "#3498db"
-        case Singleton.CalcBoundingVolume:
-            return "#9b59b6"
-        case Singleton.CalcTriangleVolume:
-            return "#34495e"
-        case Singleton.LoadGeometry:
-            return "#f1c40f"
-        case Singleton.LoadScene:
-            return "#e67e22"
-        case Singleton.LoadTextureData:
-            return "#e74c3c"
-        case Singleton.PickBoundingVolume:
-            return "#bdc3c7"
-        case Singleton.RenderView:
-            return "#95a5a6"
-        case Singleton.UpdateTransform:
-            return "#f39c12"
-        case Singleton.UpdateBoundingVolume:
-            return "#d35400"
-        case Singleton.FrameSubmission:
-            return "#1f3a96"
-        case Singleton.LayerFiltering:
-            return "#453E4A"
-        case Singleton.EntityComponentTypeFiltering:
-            return "#E6567A"
-        case Singleton.MaterialParameterGathering:
-            return "#816432"
-        case Singleton.RenderViewBuilder:
-            return "#025159"
-        case Singleton.GenericLambda:
-            return "#F7E999"
-        case Singleton.FrustumCulling:
-            return "#1DABB8"
-        case Singleton.LightGathering:
-            return "#F9690E"
-        default:
-            return "red"
-        }
-    }
 
-    function jobNameForType(type)
-    {
-        switch (type) {
-        case Singleton.LoadBuffer:
-            return "LoadBuffer"
-        case Singleton.FrameCleanup:
-            return "FrameCleanup"
-        case Singleton.FramePreparation:
-            return "FramePreparation"
-        case Singleton.CalcBoundingVolume:
-            return "CalcBoundingVolume"
-        case Singleton.CalcTriangleVolume:
-            return "CalcTriangleVolume"
-        case Singleton.LoadGeometry:
-            return "LoadGeometry"
-        case Singleton.LoadScene:
-            return "LoadScene"
-        case Singleton.LoadTextureData:
-            return "LoadTextureData"
-        case Singleton.PickBoundingVolume:
-            return "PickBoundingVolume"
-        case Singleton.RenderView:
-            return "RenderView"
-        case Singleton.UpdateTransform:
-            return "UpdateTransform"
-        case Singleton.UpdateBoundingVolume:
-            return "UpdateBoundingVolume"
-        case Singleton.FrameSubmission:
-            return "FrameSubmission"
-        case Singleton.LayerFiltering:
-            return "LayerFiltering"
-        case Singleton.EntityComponentTypeFiltering:
-            return "EntityComponentTypeFiltering"
-        case Singleton.MaterialParameterGathering:
-            return "MaterialParameterGathering"
-        case Singleton.RenderViewBuilder:
-            return "RenderViewBuilder"
-        case Singleton.GenericLambda:
-            return "GenericLambdaSync"
-        case Singleton.FrustumCulling:
-            return "FrustumCulling"
-        case Singleton.LightGathering:
-            return "LightGathering"
-        default:
-            return "Unknown"
-        }
-    }
 
     FileDialog {
         id: fileDialog
@@ -173,6 +79,7 @@ Window {
     }
 
     FrameJobView {
+        id: frameJobView
         anchors {
             left: parent.left
             right: parent.right
@@ -203,36 +110,13 @@ Window {
         }
     }
 
-    Grid {
-        id: g
-        spacing: 20
+    JobLegend {
         rows: 2
+        spacing: 10
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
-            bottomMargin: 25
-        }
-
-        Repeater {
-            model: Singleton.MaxType
-            Row {
-                spacing: 5
-                Rectangle {
-                    id: colorIndicator
-                    color: colorForType(model.index)
-                    width: 15
-                    height: 15
-                    gradient: Gradient {
-                        GradientStop { color: colorIndicator.color; position: 0.0}
-                        GradientStop { color: Qt.darker(colorIndicator.color, 1.25); position: 1.0}
-                    }
-                }
-                Text {
-                    anchors.verticalCenter: colorIndicator.verticalCenter
-                    text: jobNameForType(model.index)
-                    color: "white"
-                }
-            }
+            bottomMargin: 100
         }
     }
 }
