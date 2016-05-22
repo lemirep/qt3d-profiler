@@ -38,6 +38,7 @@
 #include <QJsonObject>
 #include <QColor>
 #include <QDebug>
+#include <memory>
 
 //////////// Structs for Binary Format ///////////////
 
@@ -226,6 +227,25 @@ public:
     Q_ENUM(Roles)
 };
 
+struct AspectJobInfo
+{
+    QVariant data(int role) const;
+
+    QString m_name;
+    std::unique_ptr<JobTypeInfoModel> m_jobTypeInfoModel;
+};
+Q_DECLARE_TYPEINFO(AspectJobInfo, Q_MOVABLE_TYPE);
+
+class AspectInfoModel : public ListModel<AspectJobInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        Name = Qt::UserRole + 1,
+        JobTypeInfoModel
+    };
+    Q_ENUM(Roles)
+};
 
 QVariant JobInfo::data(int role) const
 {
@@ -241,13 +261,24 @@ QVariant JobInfo::data(int role) const
     }
 }
 
+QVariant AspectJobInfo::data(int role) const
+{
+    switch (role) {
+    case AspectInfoModel::Name:
+        return m_name;
+    case AspectInfoModel::JobTypeInfoModel:
+        return QVariant::fromValue(m_jobTypeInfoModel.get());
+    default:
+        return QVariant();
+    }
+}
 
 //// MAIN CLASS
 
 JobStatsReader::JobStatsReader()
     : QObject()
     , m_jobStatsModel(new FrameModel)
-    , m_jobTypeInfoModel(new JobTypeInfoModel)
+    , m_aspectInfoModel(new AspectInfoModel)
     , m_msecToPixelScale(1000.0f)
     , m_threadCount(0)
 {
@@ -272,11 +303,23 @@ void JobStatsReader::parseConfigFile(const QString &filePath)
     }
 
     QJsonObject root = jsonDoc.object();
-    std::vector<JobInfo> jobInfo;
     const QJsonArray aspects = root.value(QLatin1String("aspects")).toArray();
+
+    std::vector<AspectJobInfo> aspectsInfo;
+    aspectsInfo.reserve(aspects.size());
+
     for (const QJsonValue &aspectValue : aspects) {
         const QJsonObject aspectObj = aspectValue.toObject();
+
+        AspectJobInfo aspectJobInfo;
+        aspectJobInfo.m_name = aspectObj.value(QLatin1String("name")).toString();
+        aspectJobInfo.m_jobTypeInfoModel.reset(new JobTypeInfoModel);
+
         const QJsonArray jobs = aspectObj.value(QLatin1String("jobs")).toArray();
+        std::vector<JobInfo> jobInfo;
+        jobInfo.reserve(jobs.size());
+
+        // Build JobTypeModel based on the above
         for (const QJsonValue &jobValue : jobs) {
             const QJsonObject job = jobValue.toObject();
             const int typeId = job.value(QLatin1String("type")).toInt();
@@ -286,9 +329,13 @@ void JobStatsReader::parseConfigFile(const QString &filePath)
             m_jobTypeToNameTable.insert(typeId, jobName);
             jobInfo.push_back({typeId, jobName, jobColor});
         }
+
+        aspectJobInfo.m_jobTypeInfoModel->insertRows(jobInfo);
+        aspectsInfo.push_back(std::move(aspectJobInfo));
     }
-    // Build JobTypeModel based on the above
-    m_jobTypeInfoModel->insertRows(jobInfo);
+
+    // Build AspectModel based on the above
+    m_aspectInfoModel->insertRows(std::move(aspectsInfo));
 }
 
 void JobStatsReader::readTraceFile(const QUrl &fileUrl)
@@ -392,9 +439,9 @@ QAbstractListModel *JobStatsReader::jobStatsModel() const
     return m_jobStatsModel.data();
 }
 
-QAbstractListModel *JobStatsReader::jobTypeInfoModel() const
+QAbstractListModel *JobStatsReader::aspectInfoModel() const
 {
-    return m_jobTypeInfoModel.data();
+    return m_aspectInfoModel.data();
 }
 
 float JobStatsReader::msecToPixelScale() const

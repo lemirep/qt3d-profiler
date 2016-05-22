@@ -36,13 +36,13 @@
 #include <QAbstractListModel>
 
 class FrameModel;
-class JobTypeInfoModel;
+class AspectInfoModel;
 
 class JobStatsReader : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QAbstractListModel *jobStatsModel READ jobStatsModel NOTIFY jobStatsModelChanged)
-    Q_PROPERTY(QAbstractListModel *jobTypeInfoModel READ jobTypeInfoModel CONSTANT)
+    Q_PROPERTY(QAbstractListModel *aspectInfoModel READ aspectInfoModel CONSTANT)
     Q_PROPERTY(float msecToPixelScale READ msecToPixelScale WRITE setMsecToPixelScale NOTIFY msecToPixelScaleChanged)
     Q_PROPERTY(int threadCount READ threadCount NOTIFY threadCountChanged)
 public:
@@ -52,7 +52,7 @@ public:
     Q_INVOKABLE void readTraceFile(const QUrl &fileUrl);
 
     QAbstractListModel *jobStatsModel() const;
-    QAbstractListModel *jobTypeInfoModel() const;
+    QAbstractListModel *aspectInfoModel() const;
     float msecToPixelScale() const;
     int threadCount() const;
     void setMsecToPixelScale(float scale);
@@ -65,7 +65,7 @@ Q_SIGNALS:
 
 private:
     QScopedPointer<FrameModel> m_jobStatsModel;
-    QScopedPointer<JobTypeInfoModel> m_jobTypeInfoModel;
+    QScopedPointer<AspectInfoModel> m_aspectInfoModel;
     float m_msecToPixelScale;
     int m_threadCount;
 

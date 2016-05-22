@@ -86,6 +86,16 @@ public:
         return true;
     }
 
+    bool insertRows(std::vector<T> &&data)
+    {
+        if (data.size() == 0)
+            return false;
+        beginInsertRows(QModelIndex(), m_items.size(), m_items.size() + data.size() - 1);
+        std::move(data.begin(), data.end(), std::back_inserter(m_items));
+        endInsertRows();
+        return true;
+    }
+
     bool insertRow(const T &data)
     {
         beginInsertRows(QModelIndex(), m_items.size(), m_items.size());

@@ -111,12 +111,12 @@ Window {
     }
 
     JobLegend {
-        rows: 2
         spacing: 10
         anchors {
             horizontalCenter: parent.horizontalCenter
             bottom: parent.bottom
             bottomMargin: 100
         }
+        height: 200
     }
 }

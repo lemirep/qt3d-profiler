@@ -35,28 +35,58 @@ import QtQuick.Controls 1.4
 import QtQuick.Controls.Styles 1.4
 import Profiler 1.0
 
-Grid {
-    id: g
-    spacing: 20
+
+Flow {
+    spacing: 25
+    width: childrenRect.width
+    height: childrenRect.height
 
     Repeater {
-        model: Singleton.jobTypeInfoModel
-        Row {
-            spacing: 5
-            Rectangle {
-                id: colorIndicator
-                color: model.Color
-                width: 15
-                height: 15
-                gradient: Gradient {
-                    GradientStop { color: colorIndicator.color; position: 0.0}
-                    GradientStop { color: Qt.darker(colorIndicator.color, 1.25); position: 1.0}
+        model: Singleton.aspectInfoModel
+
+        Column {
+            readonly property QtObject typeInfoModel: model.JobTypeInfoModel
+            id: innerColumn
+            width: childrenRect.width
+            height: childrenRect.height
+            spacing: 10
+
+
+            Text {
+                color: "white"
+                text: model.Name
+                font {
+                    capitalization: Font.Capitalize
+                    pointSize: 20
                 }
             }
-            Text {
-                anchors.verticalCenter: colorIndicator.verticalCenter
-                text: model.Name
-                color: "white"
+
+            Grid {
+                id: g
+                spacing: 20
+                rows: 2
+
+                Repeater {
+                    model: typeInfoModel
+                    Row {
+                        spacing: 5
+                        Rectangle {
+                            id: colorIndicator
+                            color: model.Color
+                            width: 15
+                            height: 15
+                            gradient: Gradient {
+                                GradientStop { color: colorIndicator.color; position: 0.0}
+                                GradientStop { color: Qt.darker(colorIndicator.color, 1.25); position: 1.0}
+                            }
+                        }
+                        Text {
+                            anchors.verticalCenter: colorIndicator.verticalCenter
+                            text: model.Name
+                            color: "white"
+                        }
+                    }
+                }
             }
         }
     }

@@ -19,11 +19,26 @@
                 { "type": 13, "name": "FrameSubmission", "color": "#1f3a96" },
                 { "type": 14, "name": "LayerFiltering", "color": "#453E4A" },
                 { "type": 15, "name": "EntityComponentTypeFiltering", "color": "#E6567A" },
-                { "type": 16, "name": "MaterialParameterGathering", "color": "#816432" },
+                { "type": 16, "name": "MaterialParameterGathering", "color": "#F22613" },
                 { "type": 17, "name": "RenderViewBuilder", "color": "#025159" },
                 { "type": 18, "name": "GenericLambda", "color": "#F7E999" },
                 { "type": 19, "name": "FrustumCulling", "color": "#1DABB8" },
                 { "type": 20, "name": "LightGathering", "color": "#F9690E" }
+            ]
+        },
+        {
+            "name": "input",
+            "jobs": [
+                { "type": 1024, "name": "AssignKeyboardFocus", "color": "#C0392B" },
+                { "type": 1025, "name": "KeyEventDispatcher", "color": "#D2527F" },
+                { "type": 1026, "name": "MouseEventDispatcher", "color": "#663399" },
+                { "type": 1027, "name": "UpdateAxisAction", "color": "#446CB3" }
+            ]
+        },
+        {
+            "name": "logic",
+            "jobs": [
+                { "type": 2048, "name": "Callback", "color": "#019875" }
             ]
         }
     ]
