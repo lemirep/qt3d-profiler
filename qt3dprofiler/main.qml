@@ -78,45 +78,56 @@ Window {
         onClicked: fileDialog.visible = true
     }
 
-    FrameJobView {
-        id: frameJobView
+
+    ScrollView {
         anchors {
+            top: traceSelector.bottom
             left: parent.left
             right: parent.right
             bottom: parent.bottom
-            top: traceSelector.bottom
         }
-    }
 
-    Column {
-        anchors {
-            left: parent.left
-            bottom: parent.bottom
-            bottomMargin: 25
-            leftMargin: 25
-        }
-        Text {
-            text: "1 ms === " + zoomSlider.value + "px"
-            color: "white"
-            anchors.horizontalCenter: zoomSlider.horizontalCenter
-        }
-        Slider {
-            id: zoomSlider
-            maximumValue: 5000
-            minimumValue: 50
-            width: 400
-            value: Singleton.msecToPixelScale
-            onValueChanged: Singleton.msecToPixelScale = value
-        }
-    }
+        Column {
+            spacing: 20
 
-    JobLegend {
-        spacing: 10
-        anchors {
-            horizontalCenter: parent.horizontalCenter
-            bottom: parent.bottom
-            bottomMargin: 100
+            Column {
+                // TO DO: Allow to load multiple traces to perform comparison
+                FrameJobView {
+                    id: frameJobView
+                }
+            }
+
+            Item {
+                width: frameJobView.width
+                height: childrenRect.height + 15
+                Column {
+                    anchors {
+                        left: parent.left
+                        leftMargin: 25
+                    }
+                    Text {
+                        text: "1 ms === " + zoomSlider.value + "px"
+                        color: "white"
+                        anchors.horizontalCenter: zoomSlider.horizontalCenter
+                    }
+                    Slider {
+                        id: zoomSlider
+                        maximumValue: 5000
+                        minimumValue: 50
+                        width: 400
+                        value: Singleton.msecToPixelScale
+                        onValueChanged: Singleton.msecToPixelScale = value
+                    }
+                }
+            }
+
+            JobLegend {
+                spacing: 10
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                }
+                height: 400
+            }
         }
-        height: 200
     }
 }

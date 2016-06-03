@@ -38,9 +38,16 @@ import Profiler 1.0
 Item {
     id: frameView
     readonly property int barHeight: 50
+    implicitWidth: mainRoot.width
+    height: childrenRect.height
 
     Column {
         id: sideBar
+        anchors {
+            left: parent.left
+            leftMargin: 25
+        }
+
         StyledRectText {
             text: "Frame"
             rectColor: "#F89406"
@@ -62,11 +69,11 @@ Item {
         spacing: 5
         anchors {
             left: sideBar.right
-            right: parent.right
-            top: parent.top
-            topMargin: barHeight + 5
-            bottom: parent.bottom
             leftMargin: 5
+            right: parent.right
+            rightMargin: 25
+            top: sideBar.top
+            topMargin: barHeight + 5
         }
 
         Repeater {
@@ -88,12 +95,11 @@ Item {
     ScrollView {
         id: scrollView
         anchors {
-            left: sideBar.right
-            leftMargin: 5
-            right: parent.right
-            top: parent.top
+            left: backgroundBandColumn.left
+            right: backgroundBandColumn.right
+            top: sideBar.top
         }
-        height: sideBar.height
+        height: sideBar.height + 50
 
         ListView {
             id: listView

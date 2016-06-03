@@ -15,15 +15,16 @@
                 { "type": 9, "name": "PickBoundingVolume", "color": "#bdc3c7" },
                 { "type": 10, "name": "RenderView", "color": "#95a5a6" },
                 { "type": 11, "name": "UpdateTransforms", "color": "#f39c12" },
-                { "type": 12, "name": "UpdateBoundingVolume", "color": "#d35400" },
+                { "type": 12, "name": "ExpendBoundingVolume", "color": "#d35400" },
                 { "type": 13, "name": "FrameSubmission", "color": "#1f3a96" },
                 { "type": 14, "name": "LayerFiltering", "color": "#453E4A" },
                 { "type": 15, "name": "EntityComponentTypeFiltering", "color": "#E6567A" },
-                { "type": 16, "name": "MaterialParameterGathering", "color": "#F22613" },
+                { "type": 16, "name": "MaterialParameterGathering", "color": "#D8335B" },
                 { "type": 17, "name": "RenderViewBuilder", "color": "#025159" },
                 { "type": 18, "name": "GenericLambda", "color": "#F7E999" },
                 { "type": 19, "name": "FrustumCulling", "color": "#1DABB8" },
-                { "type": 20, "name": "LightGathering", "color": "#F9690E" }
+                { "type": 20, "name": "LightGathering", "color": "#F9690E" },
+                { "type": 21, "name": "UpdateWorldBoundingVolumes", "color": "#00587A" }
             ]
         },
         {
