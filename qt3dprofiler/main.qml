@@ -28,11 +28,12 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Dialogs 1.0
 import QtQuick.Window 2.0
-import QtQuick.Controls 1.4
+import QtQuick.Controls 2.0
 import QtQuick.Controls.Styles 1.4
+import QtQml.Models 2.2
 import Profiler 1.0
 
 Window {
@@ -42,19 +43,29 @@ Window {
     height: Screen.desktopAvailableHeight
     color: "#22313f"
 
+    FontLoader {
+        id: robotoFont
+        source: "Roboto-Regular.ttf"
+    }
+
+    DebuggerConnection {
+        id: debuggerConnection
+        host: "127.0.0.1"
+        onConnectedChanged: console.log("Connected ?" + debuggerConnection.connected)
+    }
+
     Text {
         anchors {
             right: parent.right
             bottom: parent.bottom
-            margins: 25
+            margins: 50
         }
         font.italic: true
         font.pointSize: 25
         color: "white"
         text: "Qt3D Profiler"
+        font.family: robotoFont.name
     }
-
-
 
     FileDialog {
         id: fileDialog
@@ -62,72 +73,94 @@ Window {
         width: 600
         height: 400
         nameFilters: [ "Qt3D trace file (*.qt3d)" ]
-        onAccepted: Singleton.readTraceFile(fileDialog.fileUrl)
+        onAccepted: Singleton.addTraceFile(fileDialog.fileUrl)
     }
 
-    TraceSelector {
-        id: traceSelector
-        width: parent.width * 0.4
-        height: 50
-        anchors {
-            horizontalCenter: parent.horizontalCenter
-            top: parent.top
-            topMargin: 50
+    ListView {
+        id: pageListView
+        model: VisualItemModel {
+            JobTraceView { height: ListView.view.height; width: ListView.view.width }
+            Rectangle { color: "red"; height: ListView.view.height; width: ListView.view.width }
+            Rectangle { color: "blue"; height: ListView.view.height; width: ListView.view.width }
         }
-        text: fileDialog.fileUrl
-        onClicked: fileDialog.visible = true
-    }
-
-
-    ScrollView {
         anchors {
-            top: traceSelector.bottom
+            top: menu.bottom
             left: parent.left
             right: parent.right
+            bottom: bottomBar.top
+            topMargin: 25
+        }
+        snapMode: ListView.SnapOneItem
+        orientation: ListView.Horizontal
+        preferredHighlightBegin: 0
+        preferredHighlightEnd: width
+        highlightRangeMode: ListView.StrictlyEnforceRange
+        highlightMoveDuration: -1
+        highlightMoveVelocity: -1
+    }
+
+    BottomBar {
+        id: bottomBar
+        anchors {
             bottom: parent.bottom
+            left: parent.left
+            right: parent.right
         }
 
-        Column {
-            spacing: 20
-
-            Column {
-                // TO DO: Allow to load multiple traces to perform comparison
-                FrameJobView {
-                    id: frameJobView
+        Row {
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                leftMargin: 15
+                topMargin: bottomBar.closedHeight * 0.5 - connectionIndicator.width * 0.5
+            }
+            spacing: 10
+            Rectangle {
+                id: connectionIndicator
+                color: debuggerConnection.connected ? "green" : "red"
+                width: 15
+                height: width
+                radius: width * 0.5
+                gradient: Gradient {
+                    GradientStop { color: connectionIndicator.color; position: 0.0}
+                    GradientStop { color: Qt.darker(connectionIndicator.color, 1.25); position: 1.0}
                 }
             }
-
-            Item {
-                width: frameJobView.width
-                height: childrenRect.height + 15
-                Column {
-                    anchors {
-                        left: parent.left
-                        leftMargin: 25
-                    }
-                    Text {
-                        text: "1 ms === " + zoomSlider.value + "px"
-                        color: "white"
-                        anchors.horizontalCenter: zoomSlider.horizontalCenter
-                    }
-                    Slider {
-                        id: zoomSlider
-                        maximumValue: 5000
-                        minimumValue: 50
-                        width: 400
-                        value: Singleton.msecToPixelScale
-                        onValueChanged: Singleton.msecToPixelScale = value
-                    }
-                }
-            }
-
-            JobLegend {
-                spacing: 10
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                }
-                height: 400
+            Text {
+                font.family: robotoFont.name
+                color: "white"
+                text: debuggerConnection.connected ? "Connected" : "Disconnected"
             }
         }
+
+        CommandTerminal {
+            anchors {
+                left: parent.left
+                right: parent.right
+                top: parent.top
+                topMargin: bottomBar.closedHeight
+                bottom: parent.bottom
+            }
+            enabled: debuggerConnection.connected
+            visible: height > 0
+            onCommandEntered: {
+                debuggerConnection.executeCommand(command);
+            }
+        }
+    }
+
+    ProfilerMenu {
+        id: menu
+        anchors {
+            top: parent.top
+            topMargin: 15
+            left: parent.left
+            right: parent.right
+            rightMargin: 25
+            leftMargin: 25
+        }
+        onClicked: pageListView.currentIndex = idx
+        currentIndex: pageListView.currentIndex
     }
 }

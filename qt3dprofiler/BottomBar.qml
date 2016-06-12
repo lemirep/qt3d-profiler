@@ -28,25 +28,38 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include "backendinterfacer.h"
-#include "debuggerconnection.h"
+import QtQuick 2.5
 
-QObject *singletonProvider(QQmlEngine *, QJSEngine *)
-{
-    return new BackendInterfacer();
+Item {
+    property bool expanded: false
+    readonly property int closedHeight: 35
+    height: expanded ? 350 : closedHeight
+
+    Behavior on height { NumberAnimation { duration: 750; easing.type: Easing.InOutQuad } }
+
+    Rectangle {
+        color: "#333333"
+        anchors {
+            top: parent.top
+            left: parent.left
+            right: parent.right
+        }
+        height: closedHeight
+        Text {
+            text: "V"
+            font.pointSize: 18
+            color: "grey"
+            anchors {
+                right: parent.right
+                verticalCenter: parent.verticalCenter
+                rightMargin: 15
+            }
+            rotation: expanded ? 0 : 180
+            Behavior on rotation { NumberAnimation { duration: 500 } }
+            MouseArea {
+                anchors.fill: parent
+                onClicked: expanded = !expanded
+            }
+        }
+    }
 }
-
-int main(int ac, char **av)
-{
-    QGuiApplication app(ac, av);
-    QQmlApplicationEngine engine;
-    qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
-    qmlRegisterType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection");
-
-    engine.load(QUrl("qrc:/main.qml"));
-
-    return app.exec();
-}
-

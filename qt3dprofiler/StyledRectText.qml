@@ -38,6 +38,8 @@ Text {
     verticalAlignment: Text.AlignVCenter
     horizontalAlignment: Text.AlignHCenter
     width: Math.max(75, implicitWidth)
+    font.family: robotoFont.name
+
     Rectangle {
         id: rect
         anchors.fill: parent

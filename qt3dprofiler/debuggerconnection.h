@@ -28,25 +28,51 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include "backendinterfacer.h"
-#include "debuggerconnection.h"
+#ifndef DEBUGGERCONNECTION_H
+#define DEBUGGERCONNECTION_H
 
-QObject *singletonProvider(QQmlEngine *, QJSEngine *)
+#include <QObject>
+
+class QTcpSocket;
+class QTimer;
+
+class DebuggerConnection : public QObject
 {
-    return new BackendInterfacer();
-}
+    Q_OBJECT
+    Q_PROPERTY(QString host READ host WRITE setHost NOTIFY hostChanged)
+    Q_PROPERTY(bool connected READ isConnected NOTIFY connectedChanged)
+public:
+    explicit DebuggerConnection(QObject *parent = nullptr);
 
-int main(int ac, char **av)
-{
-    QGuiApplication app(ac, av);
-    QQmlApplicationEngine engine;
-    qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
-    qmlRegisterType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection");
+    Q_INVOKABLE void executeCommand(const QString &command);
 
-    engine.load(QUrl("qrc:/main.qml"));
+    inline bool isConnected() const { return m_connected; }
 
-    return app.exec();
-}
+    inline QString host() const { return m_host; }
+    void setHost(const QString &host);
 
+Q_SIGNALS:
+    void hostChanged();
+    void connectedChanged();
+
+private Q_SLOTS:
+    void connectToHost();
+    void onReplyReceived();
+
+private:
+    QTcpSocket *m_socket;
+    QString m_host;
+    bool m_connected;
+
+    struct ReadBuffer {
+        ReadBuffer();
+
+        QByteArray buffer;
+        int startIdx;
+        int endIdx;
+    };
+    ReadBuffer m_readBuffer;
+    QTimer *m_disconnectedTimer;
+};
+
+#endif // DEBUGGERCONNECTION_H

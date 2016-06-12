@@ -104,7 +104,15 @@ public:
         return true;
     }
 
-    bool removeRows(int row, int count = 0)
+    bool insertRow(T &&data)
+    {
+        beginInsertRows(QModelIndex(), m_items.size(), m_items.size());
+        m_items.push_back(std::move(data));
+        endInsertRows();
+        return true;
+    }
+
+    Q_INVOKABLE bool removeRows(int row, int count = 0)
     {
         beginRemoveRows(QModelIndex(), row, row + count);
         m_items.erase(m_items.begin() + row, m_items.begin() + row + count + 1);

@@ -28,25 +28,8 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include "backendinterfacer.h"
-#include "debuggerconnection.h"
+#include "commandresultreceiver.h"
 
-QObject *singletonProvider(QQmlEngine *, QJSEngine *)
+CommandResultReceiver::CommandResultReceiver()
 {
-    return new BackendInterfacer();
 }
-
-int main(int ac, char **av)
-{
-    QGuiApplication app(ac, av);
-    QQmlApplicationEngine engine;
-    qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
-    qmlRegisterType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection");
-
-    engine.load(QUrl("qrc:/main.qml"));
-
-    return app.exec();
-}
-

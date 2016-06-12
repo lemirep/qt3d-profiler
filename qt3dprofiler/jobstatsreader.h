@@ -31,46 +31,16 @@
 #ifndef JOBSTATSREADER_H
 #define JOBSTATSREADER_H
 
-#include <QObject>
-#include <QScopedPointer>
-#include <QAbstractListModel>
+#include <QHash>
+#include <QColor>
+#include <QUrl>
 
-class FrameModel;
-class AspectInfoModel;
+class JobTraces;
 
-class JobStatsReader : public QObject
+struct JobStatsReader
 {
-    Q_OBJECT
-    Q_PROPERTY(QAbstractListModel *jobStatsModel READ jobStatsModel NOTIFY jobStatsModelChanged)
-    Q_PROPERTY(QAbstractListModel *aspectInfoModel READ aspectInfoModel CONSTANT)
-    Q_PROPERTY(float msecToPixelScale READ msecToPixelScale WRITE setMsecToPixelScale NOTIFY msecToPixelScaleChanged)
-    Q_PROPERTY(int threadCount READ threadCount NOTIFY threadCountChanged)
-public:
-    JobStatsReader();
-    ~JobStatsReader();
-
-    Q_INVOKABLE void readTraceFile(const QUrl &fileUrl);
-
-    QAbstractListModel *jobStatsModel() const;
-    QAbstractListModel *aspectInfoModel() const;
-    float msecToPixelScale() const;
-    int threadCount() const;
-    void setMsecToPixelScale(float scale);
-
-
-Q_SIGNALS:
-    void jobStatsModelChanged();
-    void msecToPixelScaleChanged();
-    void threadCountChanged();
-
-private:
-    QScopedPointer<FrameModel> m_jobStatsModel;
-    QScopedPointer<AspectInfoModel> m_aspectInfoModel;
-    float m_msecToPixelScale;
-    int m_threadCount;
-
-    void parseConfigFile(const QString &filePath);
-    QHash<int, QString> m_jobTypeToNameTable;
-    QHash<int, QColor> m_jobTypeToColorTable;
+    static JobTraces readTraceFile(const QUrl &fileUrl);
+    static QHash<int, QString> jobTypeToNameTable;
+    static QHash<int, QColor> jobTypeToColorTable;
 };
 #endif // JOBSTATSREADER_H

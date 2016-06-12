@@ -62,6 +62,7 @@ Rectangle {
         width: parent.width - 25
         horizontalAlignment: Text.AlignHCenter
         elide: Text.ElideRight
+        font.family: robotoFont.name
     }
     MouseArea {
         id: ma
@@ -71,7 +72,7 @@ Rectangle {
             collapsed = !collapsed
         }
         onEntered: {
-            var pos = frameView.mapFromItem(ma, ma.mouseX, ma.mouseY)
+            var pos = pageListView.mapFromItem(ma, ma.mouseX, ma.mouseY)
             frameView.jobHighLight.x = pos.x + 15
             frameView.jobHighLight.y = pos.y + 15
             frameView.jobHighLight.visible = true

@@ -28,25 +28,39 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include "backendinterfacer.h"
-#include "debuggerconnection.h"
+import QtQuick 2.7
 
-QObject *singletonProvider(QQmlEngine *, QJSEngine *)
-{
-    return new BackendInterfacer();
+Rectangle {
+    id: addTraceButton
+
+    color: "#3498db"
+    property alias text: textItem.text
+
+    width: 100
+    height: width
+    radius: width * 0.5
+
+    gradient: Gradient {
+        GradientStop { color: Qt.lighter(addTraceButton.color, addTraceButtonMa.containsMouse ? 1.25 : 1); position: 0.0}
+        GradientStop { color: Qt.darker(addTraceButton.color, 1.25); position: 1.0}
+    }
+
+    signal clicked();
+
+    Text {
+        id: textItem
+        anchors.centerIn: parent
+        color: "white"
+        font.bold: true
+        font.pixelSize: 30
+        text: "+"
+    }
+
+    scale: addTraceButtonMa.pressed ? 0.9 : 1.0
+
+    MouseArea {
+        id: addTraceButtonMa
+        anchors.fill: parent
+        onClicked: addTraceButton.clicked()
+    }
 }
-
-int main(int ac, char **av)
-{
-    QGuiApplication app(ac, av);
-    QQmlApplicationEngine engine;
-    qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
-    qmlRegisterType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection");
-
-    engine.load(QUrl("qrc:/main.qml"));
-
-    return app.exec();
-}
-

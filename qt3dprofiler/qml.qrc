@@ -2,7 +2,6 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>Thread.qml</file>
-        <file>Frame.qml</file>
         <file>Job.qml</file>
         <file>TraceSelector.qml</file>
         <file>FrameJobView.qml</file>
@@ -10,5 +9,12 @@
         <file>JobHighlight.qml</file>
         <file>config.json</file>
         <file>JobLegend.qml</file>
+        <file>CommandTerminal.qml</file>
+        <file>ProfilerMenu.qml</file>
+        <file>BottomBar.qml</file>
+        <file>JobFrame.qml</file>
+        <file>AddButton.qml</file>
+        <file>JobTraceView.qml</file>
+        <file>Roboto-Regular.ttf</file>
     </qresource>
 </RCC>

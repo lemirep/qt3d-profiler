@@ -28,8 +28,7 @@
 **
 ****************************************************************************/
 
-
-import QtQuick 2.5
+import QtQuick 2.7
 import Profiler 1.0
 
 Item {
@@ -38,6 +37,7 @@ Item {
     property int threadCount
     property int frameId
     property int totalDuration // in nsec
+    property real startTime
 
     width: childrenRect.width
     height: childrenRect.height

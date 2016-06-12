@@ -29,324 +29,29 @@
 ****************************************************************************/
 
 #include "jobstatsreader.h"
-#include "listmodel.h"
+#include "datamodels.h"
+
 #include <QFile>
 #include <QUrl>
-#include <QSharedPointer>
-#include <QJsonDocument>
-#include <QJsonArray>
-#include <QJsonObject>
-#include <QColor>
 #include <QDebug>
-#include <memory>
 
-//////////// Structs for Binary Format ///////////////
+QHash<int, QString> JobStatsReader::jobTypeToNameTable;
+QHash<int, QColor> JobStatsReader::jobTypeToColorTable;
 
-struct FrameHeader
-{
-    quint32 frameId;
-    quint32 jobCount;
-};
-
-union JobId
-{
-    quint32 typeAndInstance[2];
-    quint64 id;
-};
-
-struct JobRunStats
-{
-    JobRunStats()
-    {
-        jobId.id = 0;
-    }
-
-    qint64 startTime;
-    qint64 endTime;
-    JobId jobId;
-    quint64 threadId;
-};
-
-////////////// Models ///////////////
-
-class JobModel;
-class ThreadModel;
-
-class Job
-{
-public:
-    QVariant data(int role) const;
-
-    JobRunStats m_jobStats;
-    qint64 m_frameStart;
-    qint64 m_frameEnd;
-    QString m_name;
-    QColor m_color;
-};
-
-class Thread
-{
-public:
-    QVariant data(int role) const;
-
-    QSharedPointer<JobModel> m_jobModel;
-    int m_threadId;
-};
-
-class Frame
-{
-public:
-    QVariant data(int role) const;
-
-    FrameHeader m_header;
-    QSharedPointer<ThreadModel> m_threadModel;
-    quint64 m_totalDuration;
-    quint64 m_startTime;
-};
-
-class JobModel : public ListModel<Job>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        InstanceId = Qt::UserRole + 1,
-        Type,
-        Start,
-        End,
-        Duration,
-        FrameStart, // Relative to the total duration of a frame
-        FrameEnd,
-        Name,
-        Color
-    };
-    Q_ENUM(Roles)
-};
-
-class ThreadModel : public ListModel<Thread>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        Id = Qt::UserRole + 1,
-        JobCount,
-        JobModel
-    };
-    Q_ENUM(Roles)
-};
-
-class FrameModel : public ListModel<Frame>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        Id = Qt::UserRole + 1,
-        ThreadCount,
-        ThreadsModel,
-        TotalDuration
-    };
-    Q_ENUM(Roles)
-};
-
-
-QVariant Job::data(int role) const
-{
-    switch (role) {
-    case JobModel::InstanceId:
-        return m_jobStats.jobId.typeAndInstance[1];
-    case JobModel::Type:
-        return m_jobStats.jobId.typeAndInstance[0];
-    case JobModel::Start:
-        return m_jobStats.startTime;
-    case JobModel::End:
-        return m_jobStats.endTime;
-    case JobModel::Duration:
-        return m_jobStats.endTime - m_jobStats.startTime;
-    case JobModel::FrameStart:
-        return m_frameStart;
-    case JobModel::FrameEnd:
-        return m_frameEnd;
-    case JobModel::Name:
-        return m_name;
-    case JobModel::Color:
-        return m_color;
-    default:
-        return QVariant();
-    }
-}
-
-QVariant Thread::data(int role) const
-{
-    switch (role) {
-    case ThreadModel::Id:
-        return m_threadId;
-    case ThreadModel::JobCount:
-        return m_jobModel->rowCount();
-    case ThreadModel::JobModel:
-        return QVariant::fromValue(m_jobModel.data());
-    default:
-        return QVariant();
-    }
-}
-
-QVariant Frame::data(int role) const
-{
-    switch (role) {
-    case FrameModel::Id:
-        return m_header.frameId;
-    case FrameModel::ThreadCount:
-        return m_threadModel->rowCount();
-    case FrameModel::ThreadsModel:
-        return QVariant::fromValue(m_threadModel.data());
-    case FrameModel::TotalDuration:
-        return m_totalDuration;
-    default:
-        return QVariant();
-    }
-}
-
-//// MODELS FOR DISPLAY PURPOSES ONLY
-
-struct JobInfo
-{
-    QVariant data(int role) const;
-
-    int m_typeId;
-    QString m_name;
-    QColor m_color;
-};
-
-class JobTypeInfoModel : public ListModel<JobInfo>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        TypeId = Qt::UserRole + 1,
-        Name,
-        Color
-    };
-    Q_ENUM(Roles)
-};
-
-struct AspectJobInfo
-{
-    QVariant data(int role) const;
-
-    QString m_name;
-    std::unique_ptr<JobTypeInfoModel> m_jobTypeInfoModel;
-};
-Q_DECLARE_TYPEINFO(AspectJobInfo, Q_MOVABLE_TYPE);
-
-class AspectInfoModel : public ListModel<AspectJobInfo>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        Name = Qt::UserRole + 1,
-        JobTypeInfoModel
-    };
-    Q_ENUM(Roles)
-};
-
-QVariant JobInfo::data(int role) const
-{
-    switch (role) {
-    case JobTypeInfoModel::TypeId:
-        return m_typeId;
-    case JobTypeInfoModel::Name:
-        return m_name;
-    case JobTypeInfoModel::Color:
-        return m_color;
-    default:
-        return QVariant();
-    }
-}
-
-QVariant AspectJobInfo::data(int role) const
-{
-    switch (role) {
-    case AspectInfoModel::Name:
-        return m_name;
-    case AspectInfoModel::JobTypeInfoModel:
-        return QVariant::fromValue(m_jobTypeInfoModel.get());
-    default:
-        return QVariant();
-    }
-}
-
-//// MAIN CLASS
-
-JobStatsReader::JobStatsReader()
-    : QObject()
-    , m_jobStatsModel(new FrameModel)
-    , m_aspectInfoModel(new AspectInfoModel)
-    , m_msecToPixelScale(1000.0f)
-    , m_threadCount(0)
-{
-    parseConfigFile(QLatin1Literal(":/config.json"));
-}
-
-JobStatsReader::~JobStatsReader()
-{}
-
-void JobStatsReader::parseConfigFile(const QString &filePath)
-{
-    QFile configFile(filePath);
-    if (!configFile.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to open configuration file";
-        return;
-    }
-
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(configFile.readAll());
-    if (jsonDoc.isNull() || !jsonDoc.isObject()) {
-        qWarning() << "Malformed configuration file";
-        return;
-    }
-
-    QJsonObject root = jsonDoc.object();
-    const QJsonArray aspects = root.value(QLatin1String("aspects")).toArray();
-
-    std::vector<AspectJobInfo> aspectsInfo;
-    aspectsInfo.reserve(aspects.size());
-
-    for (const QJsonValue &aspectValue : aspects) {
-        const QJsonObject aspectObj = aspectValue.toObject();
-
-        AspectJobInfo aspectJobInfo;
-        aspectJobInfo.m_name = aspectObj.value(QLatin1String("name")).toString();
-        aspectJobInfo.m_jobTypeInfoModel.reset(new JobTypeInfoModel);
-
-        const QJsonArray jobs = aspectObj.value(QLatin1String("jobs")).toArray();
-        std::vector<JobInfo> jobInfo;
-        jobInfo.reserve(jobs.size());
-
-        // Build JobTypeModel based on the above
-        for (const QJsonValue &jobValue : jobs) {
-            const QJsonObject job = jobValue.toObject();
-            const int typeId = job.value(QLatin1String("type")).toInt();
-            const QColor jobColor(job.value(QLatin1String("color")).toString());
-            const QString jobName = job.value(QLatin1String("name")).toString();
-            m_jobTypeToColorTable.insert(typeId, jobColor);
-            m_jobTypeToNameTable.insert(typeId, jobName);
-            jobInfo.push_back({typeId, jobName, jobColor});
-        }
-
-        aspectJobInfo.m_jobTypeInfoModel->insertRows(jobInfo);
-        aspectsInfo.push_back(std::move(aspectJobInfo));
-    }
-
-    // Build AspectModel based on the above
-    m_aspectInfoModel->insertRows(std::move(aspectsInfo));
-}
-
-void JobStatsReader::readTraceFile(const QUrl &fileUrl)
+JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
 {
     QFile file(fileUrl.toLocalFile());
-    m_jobStatsModel->clear();
+    JobTraces traceEntry;
+
+    traceEntry.m_jobStatsModel.reset(new FrameModel);
+
     if (file.open(QFile::ReadOnly)) {
         const int sizeOfHeader = sizeof(FrameHeader);
         const int sizeOfJob = sizeof(JobRunStats);
         QByteArray headerBuffer(sizeOfHeader, '\0');
         QByteArray jobBuffer(sizeOfJob, '\0');
+
+        traceEntry.m_title = file.fileName();
 
         QVector<quint64> threadIds;
         // Read header
@@ -362,8 +67,8 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 JobRunStats *jobStat = reinterpret_cast<JobRunStats *>(jobBuffer.data());
                 Job job;
                 job.m_jobStats = *jobStat;
-                job.m_color = m_jobTypeToColorTable.value(jobStat->jobId.typeAndInstance[0], QColor(Qt::red));
-                job.m_name = m_jobTypeToNameTable.value(jobStat->jobId.typeAndInstance[0], QLatin1String("Unknown"));
+                job.m_color = JobStatsReader::jobTypeToColorTable.value(jobStat->jobId.typeAndInstance[0], QColor(Qt::red));
+                job.m_name = JobStatsReader::jobTypeToNameTable.value(jobStat->jobId.typeAndInstance[0], QLatin1String("Unknown"));
                 jobs.push_back(job);
                 ++c;
             }
@@ -405,6 +110,11 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
             f.m_startTime = startTime;
             f.m_totalDuration = endTime - startTime;
 
+            if (traceEntry.m_totalDuration == 0)
+                traceEntry.m_totalDuration = -f.m_startTime;
+
+            traceEntry.m_totalDuration += f.m_totalDuration;
+
             for (int i = 0, m = jobs.size(); i < m;) {
                 const int j = i;
                 while (i < m && jobs[j].m_jobStats.threadId == jobs[i].m_jobStats.threadId)
@@ -423,43 +133,12 @@ void JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 f.m_threadModel->insertRow(t);
             }
 
-            m_jobStatsModel->insertRow(f);
+            traceEntry.m_jobStatsModel->insertRow(f);
         } // Repeat
-        m_threadCount = threadIds.size();
-        emit threadCountChanged();
-        emit jobStatsModelChanged();
+        traceEntry.m_threadCount = threadIds.size();
         qDebug() << Q_FUNC_INFO << "Done";
     } else {
         qDebug() << Q_FUNC_INFO << "Failure to open";
     }
+    return traceEntry;
 }
-
-QAbstractListModel *JobStatsReader::jobStatsModel() const
-{
-    return m_jobStatsModel.data();
-}
-
-QAbstractListModel *JobStatsReader::aspectInfoModel() const
-{
-    return m_aspectInfoModel.data();
-}
-
-float JobStatsReader::msecToPixelScale() const
-{
-    return m_msecToPixelScale;
-}
-
-int JobStatsReader::threadCount() const
-{
-    return m_threadCount;
-}
-
-void JobStatsReader::setMsecToPixelScale(float scale)
-{
-    if (m_msecToPixelScale != scale) {
-        m_msecToPixelScale = scale;
-        emit msecToPixelScaleChanged();
-    }
-}
-
-#include "jobstatsreader.moc"

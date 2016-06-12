@@ -28,25 +28,44 @@
 **
 ****************************************************************************/
 
-#include <QGuiApplication>
-#include <QQmlApplicationEngine>
-#include "backendinterfacer.h"
-#include "debuggerconnection.h"
+#ifndef BACKENDINTERFACER_H
+#define BACKENDINTERFACER_H
 
-QObject *singletonProvider(QQmlEngine *, QJSEngine *)
+#include <QObject>
+#include <QAbstractListModel>
+
+class AspectInfoModel;
+class JobTracesModel;
+
+class BackendInterfacer : public QObject
 {
-    return new BackendInterfacer();
-}
+    Q_OBJECT
+    Q_PROPERTY(float msecToPixelScale READ msecToPixelScale WRITE setMsecToPixelScale NOTIFY msecToPixelScaleChanged)
+    Q_PROPERTY(QAbstractListModel *aspectInfoModel READ aspectInfoModel CONSTANT)
+    Q_PROPERTY(QAbstractListModel *jobTracesModel READ jobTracesModel CONSTANT)
 
-int main(int ac, char **av)
-{
-    QGuiApplication app(ac, av);
-    QQmlApplicationEngine engine;
-    qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
-    qmlRegisterType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection");
+public:
+    explicit BackendInterfacer(QObject *parent = nullptr);
+    ~BackendInterfacer();
 
-    engine.load(QUrl("qrc:/main.qml"));
+    void setMsecToPixelScale(float scale);
+    float msecToPixelScale() const;
 
-    return app.exec();
-}
+    QAbstractListModel *aspectInfoModel() const;
+    QAbstractListModel *jobTracesModel() const;
 
+    Q_INVOKABLE void addTraceFile(const QUrl &fileUrl);
+    Q_INVOKABLE void removeTrace(int idx);
+
+Q_SIGNALS:
+    void msecToPixelScaleChanged();
+
+private:
+    void parseConfigFile(const QString &filePath);
+
+    float m_msecToPixelScale;
+    QScopedPointer<AspectInfoModel> m_aspectInfoModel;
+    QScopedPointer<JobTracesModel> m_jobTracesModel;
+};
+
+#endif // BACKENDINTERFACER_H

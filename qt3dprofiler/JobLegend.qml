@@ -59,12 +59,13 @@ Flow {
                     capitalization: Font.Capitalize
                     pointSize: 20
                 }
+                font.family: robotoFont.name
             }
 
             Grid {
                 id: g
                 spacing: 20
-                rows: 2
+                rows: 3
 
                 Repeater {
                     model: typeInfoModel
@@ -84,6 +85,7 @@ Flow {
                             anchors.verticalCenter: colorIndicator.verticalCenter
                             text: model.Name
                             color: "white"
+                            font.family: robotoFont.name
                         }
                     }
                 }
