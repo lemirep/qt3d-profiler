@@ -36,6 +36,8 @@
 
 class AspectInfoModel;
 class JobTracesModel;
+class CommandDisplayModel;
+class DebuggerConnection;
 
 class BackendInterfacer : public QObject
 {
@@ -43,6 +45,8 @@ class BackendInterfacer : public QObject
     Q_PROPERTY(float msecToPixelScale READ msecToPixelScale WRITE setMsecToPixelScale NOTIFY msecToPixelScaleChanged)
     Q_PROPERTY(QAbstractListModel *aspectInfoModel READ aspectInfoModel CONSTANT)
     Q_PROPERTY(QAbstractListModel *jobTracesModel READ jobTracesModel CONSTANT)
+    Q_PROPERTY(QAbstractListModel *commandDisplayModel READ commandDisplayModel CONSTANT)
+    Q_PROPERTY(DebuggerConnection *debuggerConnection READ debuggerConnection CONSTANT)
 
 public:
     explicit BackendInterfacer(QObject *parent = nullptr);
@@ -53,12 +57,18 @@ public:
 
     QAbstractListModel *aspectInfoModel() const;
     QAbstractListModel *jobTracesModel() const;
+    QAbstractListModel *commandDisplayModel() const;
+    DebuggerConnection *debuggerConnection() const;
 
     Q_INVOKABLE void addTraceFile(const QUrl &fileUrl);
     Q_INVOKABLE void removeTrace(int idx);
+    Q_INVOKABLE void executeCommand(const QString &command);
 
 Q_SIGNALS:
     void msecToPixelScaleChanged();
+
+private Q_SLOTS:
+    void commandReplyReceived(const QJsonDocument &reply);
 
 private:
     void parseConfigFile(const QString &filePath);
@@ -66,6 +76,8 @@ private:
     float m_msecToPixelScale;
     QScopedPointer<AspectInfoModel> m_aspectInfoModel;
     QScopedPointer<JobTracesModel> m_jobTracesModel;
+    QScopedPointer<CommandDisplayModel> m_commandDisplayModel;
+    QScopedPointer<DebuggerConnection> m_debuggerConnection;
 };
 
 #endif // BACKENDINTERFACER_H

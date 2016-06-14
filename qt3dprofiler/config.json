@@ -25,6 +25,10 @@
                 { "type": 19, "name": "FrustumCulling", "color": "#1DABB8" },
                 { "type": 20, "name": "LightGathering", "color": "#F9690E" },
                 { "type": 21, "name": "UpdateWorldBoundingVolumes", "color": "#00587A" }
+            ],
+            "commands": [
+                { "name": "glinfo", "returnType": "text" },
+                { "name": "rendercommands", "returnType": "text" }
             ]
         },
         {

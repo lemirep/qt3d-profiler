@@ -28,15 +28,14 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
-import QtQuick.Dialogs 1.0
-import QtQuick.Window 2.2
-import QtQuick.Controls 1.4
-import QtQuick.Controls.Styles 1.4
+import QtQuick 2.7
+import QtQuick.Controls 2.0
+import Profiler 1.0
 
 FocusScope {
     id: root
     signal commandEntered(string command)
+    property alias entryEnabled: commandInput.enabled
 
     Rectangle {
         color: "#1e1e27"
@@ -46,22 +45,44 @@ FocusScope {
         }
         anchors.fill: parent
 
-        ListModel { id: historyCommandModel }
-
-        ScrollView {
+        Flickable {
             anchors.fill: parent
-            horizontalScrollBarPolicy: Qt.ScrollBarAlwaysOff
+            contentWidth: col.width
+            contentHeight: col.height
+            clip: true
+
+            onContentHeightChanged: {
+                console.log(originY, contentX, contentHeight)
+                flick(0, -2.0 * contentHeight)
+            }
+
+            ScrollBar.vertical: ScrollBar {
+                id: control
+                orientation: Qt.Vertical
+                contentItem: Rectangle {
+                    implicitWidth: 6
+                    implicitHeight: 100
+                    radius: width / 2
+                    color: control.pressed ? "#81e889" : "#c2f4c6"
+                }
+                background: Rectangle {
+                    color: "#333333"
+                }
+            }
+
+
             Column {
                 id: col
                 anchors.left: parent.left
                 anchors.leftMargin: 10
 
                 Repeater {
-                    model: historyCommandModel
+                    id: historyCommands
+                    model: Singleton.commandDisplayModel
                     Text {
                         font.pointSize: 15
                         color: "grey"
-                        text: model.text
+                        text: model.Content
                         font.family: robotoFont.name
                     }
                 }
@@ -94,8 +115,22 @@ FocusScope {
                             }
                         }
 
+                        property int lastCommandIdx: 0
+
+                        Keys.onReleased: {
+                            if (event.key === Qt.Key_L && (event.modifiers & Qt.ControlModifier))
+                                Singleton.commandDisplayModel.clear()
+                            if (event.key === Qt.Key_Escape && expanded)
+                                expanded = false
+                            if (event.key === Qt.Key_Up && historyCommands.count > 0) {
+                                lastCommandIdx -= 1
+                                if (lastCommandIdx < 0)
+                                    lastCommandIdx = historyCommands.count - 1
+                                text = historyCommands.itemAt(lastCommandIdx).text.replace("qt3d:>", "").replace("No such command:", "")
+                            }
+                        }
+
                         onAccepted: {
-                            historyCommandModel.append({"text": "qt3d:> " + text})
                             // Send command to be processed
                             root.commandEntered(text)
                             text = ""
@@ -107,6 +142,7 @@ FocusScope {
 
         MouseArea {
             anchors.fill: parent
+            enabled: !commandInput.activeFocus
             onClicked: {
                 commandInput.forceActiveFocus()
             }

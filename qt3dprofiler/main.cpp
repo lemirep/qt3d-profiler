@@ -43,7 +43,7 @@ int main(int ac, char **av)
     QGuiApplication app(ac, av);
     QQmlApplicationEngine engine;
     qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
-    qmlRegisterType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection");
+    qmlRegisterUncreatableType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection", QLatin1String("Uncreatable type"));
 
     engine.load(QUrl("qrc:/main.qml"));
 

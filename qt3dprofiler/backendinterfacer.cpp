@@ -31,6 +31,8 @@
 #include "backendinterfacer.h"
 #include "datamodels.h"
 #include "jobstatsreader.h"
+#include "debuggerconnection.h"
+#include "commandresultreceiver.h"
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -41,7 +43,11 @@ BackendInterfacer::BackendInterfacer(QObject *parent)
     , m_msecToPixelScale(50.0f)
     , m_aspectInfoModel(new AspectInfoModel)
     , m_jobTracesModel(new JobTracesModel)
+    , m_commandDisplayModel(new CommandDisplayModel)
+    , m_debuggerConnection(new DebuggerConnection(this))
 {
+    QObject::connect(m_debuggerConnection.data(), &DebuggerConnection::replyReceived,
+                     this, &BackendInterfacer::commandReplyReceived);
     parseConfigFile(QLatin1Literal(":/config.json"));
 }
 
@@ -59,6 +65,16 @@ QAbstractListModel *BackendInterfacer::jobTracesModel() const
     return m_jobTracesModel.data();
 }
 
+QAbstractListModel *BackendInterfacer::commandDisplayModel() const
+{
+    return m_commandDisplayModel.data();
+}
+
+DebuggerConnection *BackendInterfacer::debuggerConnection() const
+{
+    return m_debuggerConnection.data();
+}
+
 void BackendInterfacer::addTraceFile(const QUrl &fileUrl)
 {
     m_jobTracesModel->insertRow(std::move(JobStatsReader::readTraceFile(fileUrl)));
@@ -66,8 +82,26 @@ void BackendInterfacer::addTraceFile(const QUrl &fileUrl)
 
 void BackendInterfacer::removeTrace(int idx)
 {
-    qDebug() << Q_FUNC_INFO;
     m_jobTracesModel->removeRows(idx);
+}
+
+void BackendInterfacer::executeCommand(const QString &command)
+{
+    m_commandDisplayModel->insertRow({QLatin1String("qt3d:> ") + command});
+
+    if (CommandResultReceiver::canExecuteCommand(command))
+        m_debuggerConnection->executeCommand(command);
+    else
+        m_commandDisplayModel->insertRow({QLatin1String("No such command: ") + command});
+}
+
+void BackendInterfacer::commandReplyReceived(const QJsonDocument &reply)
+{
+    CommandResultReceiver::parseCommand(reply.object());
+    m_commandDisplayModel->insertRow({QString::fromLatin1(reply.toJson())});
+    // If there are more than 15 old commands, remove the oldest ones
+    if (m_commandDisplayModel->rowCount() > 15)
+        m_commandDisplayModel->removeRows(0);
 }
 
 float BackendInterfacer::msecToPixelScale() const
@@ -123,6 +157,20 @@ void BackendInterfacer::parseConfigFile(const QString &filePath)
             JobStatsReader::jobTypeToColorTable.insert(typeId, jobColor);
             JobStatsReader::jobTypeToNameTable.insert(typeId, jobName);
             jobInfo.push_back({typeId, jobName, jobColor});
+        }
+
+        // Build command table
+        auto returnTypeNameToEnum = [] (const QString &returnTypeName) {
+            if (returnTypeName == QLatin1String("text"))
+                return CommandResultReceiver::Text;
+            return CommandResultReceiver::Unknown;
+        };
+
+        const QJsonArray commands = aspectObj.value(QLatin1String("commands")).toArray();
+        for (const QJsonValue &commandValue : commands) {
+            const QJsonObject command = commandValue.toObject();
+            CommandResultReceiver::aspectCommandNameToReturnType[aspectJobInfo.m_name].insert(command.value(QLatin1String("name")).toString(),
+                                                                                              returnTypeNameToEnum(command.value(QLatin1String("returnType")).toString()));
         }
 
         aspectJobInfo.m_jobTypeInfoModel->insertRows(jobInfo);

@@ -30,6 +30,19 @@
 
 #include "commandresultreceiver.h"
 
-CommandResultReceiver::CommandResultReceiver()
+QHash<QString, QHash<QString, CommandResultReceiver::CommandType>> CommandResultReceiver::aspectCommandNameToReturnType;
+
+
+bool CommandResultReceiver::canExecuteCommand(const QString &command)
 {
+    const QStringList commands = command.trimmed().split(QLatin1String(" "));
+    if (!(commands.size() > 1))
+        return false;
+    const QHash<QString, CommandType> availableAspectCommands = aspectCommandNameToReturnType.value(commands.first());
+    return availableAspectCommands.contains(commands.at(1));
+}
+
+void CommandResultReceiver::parseCommand(const QJsonObject &reply)
+{
+
 }

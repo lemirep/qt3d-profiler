@@ -129,3 +129,13 @@ QVariant AspectJobInfo::data(int role) const
         return QVariant();
     }
 }
+
+QVariant Command::data(int role) const
+{
+    switch (role) {
+    case CommandDisplayModel::Content:
+        return m_content;
+    default:
+        return QVariant();
+    }
+}

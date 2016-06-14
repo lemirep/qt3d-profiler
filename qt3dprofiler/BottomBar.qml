@@ -29,36 +29,100 @@
 ****************************************************************************/
 
 import QtQuick 2.5
+import Profiler 1.0
 
 Item {
+    id: root
     property bool expanded: false
+    property int lastHeight: 350
     readonly property int closedHeight: 35
-    height: expanded ? 350 : closedHeight
+    height: !expanded ? closedHeight : closedHeight + lastHeight
+    y: !expanded ? mainRoot.height - closedHeight : mainRoot.height - (closedHeight + lastHeight)
+
+    MouseArea {
+        enabled: expanded
+        drag.target: root
+        drag.axis: Drag.YAxis
+        anchors.fill: parent
+        drag.minimumY: 75
+        drag.maximumY: mainRoot.height
+        onPositionChanged: {
+            if (drag.active)
+                lastHeight = mainRoot.height - root.y - closedHeight
+        }
+    }
 
     Behavior on height { NumberAnimation { duration: 750; easing.type: Easing.InOutQuad } }
 
-    Rectangle {
-        color: "#333333"
-        anchors {
-            top: parent.top
-            left: parent.left
-            right: parent.right
-        }
-        height: closedHeight
-        Text {
-            text: "V"
-            font.pointSize: 18
-            color: "grey"
+    Column {
+        id: col
+        width: parent.width
+
+        Rectangle {
+            id: top
+            color: "#333333"
             anchors {
+                left: parent.left
                 right: parent.right
-                verticalCenter: parent.verticalCenter
-                rightMargin: 15
             }
-            rotation: expanded ? 0 : 180
-            Behavior on rotation { NumberAnimation { duration: 500 } }
-            MouseArea {
-                anchors.fill: parent
-                onClicked: expanded = !expanded
+            height: closedHeight
+
+            Text {
+                text: "V"
+                font.pointSize: 18
+                color: "grey"
+                anchors {
+                    right: parent.right
+                    verticalCenter: parent.verticalCenter
+                    rightMargin: 15
+                }
+                rotation: expanded ? 0 : 180
+                Behavior on rotation { NumberAnimation { duration: 500 } }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: expanded = !expanded
+                }
+            }
+
+            Row {
+                anchors {
+                    left: parent.left
+                    right: parent.right
+                    leftMargin: 15
+                    verticalCenter: parent.verticalCenter
+                }
+                spacing: 10
+                Rectangle {
+                    id: connectionIndicator
+                    color: Singleton.debuggerConnection.connected ? "green" : "red"
+                    Behavior on color { ColorAnimation { duration: 500 } }
+                    width: 15
+                    height: width
+                    radius: width * 0.5
+                    gradient: Gradient {
+                        GradientStop { color: connectionIndicator.color; position: 0.0}
+                        GradientStop { color: Qt.darker(connectionIndicator.color, 1.25); position: 1.0}
+                    }
+                }
+                Text {
+                    font.family: robotoFont.name
+                    color: "white"
+                    text: Singleton.debuggerConnection.connected ? "Connected" : "Disconnected"
+                }
+            }
+        }
+
+        CommandTerminal {
+            id: terminal
+            anchors {
+                left: parent.left
+                right: parent.right
+            }
+            height: expanded ? lastHeight : 0
+            entryEnabled: Singleton.debuggerConnection.connected
+            visible: height > 0
+            onCommandEntered: {
+                Singleton.executeCommand(command);
             }
         }
     }

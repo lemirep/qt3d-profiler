@@ -48,10 +48,9 @@ Window {
         source: "Roboto-Regular.ttf"
     }
 
-    DebuggerConnection {
-        id: debuggerConnection
-        host: "127.0.0.1"
-        onConnectedChanged: console.log("Connected ?" + debuggerConnection.connected)
+
+    Component.onCompleted: {
+        Singleton.debuggerConnection.host = "127.0.0.1"
     }
 
     Text {
@@ -102,51 +101,8 @@ Window {
     BottomBar {
         id: bottomBar
         anchors {
-            bottom: parent.bottom
             left: parent.left
             right: parent.right
-        }
-
-        Row {
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                leftMargin: 15
-                topMargin: bottomBar.closedHeight * 0.5 - connectionIndicator.width * 0.5
-            }
-            spacing: 10
-            Rectangle {
-                id: connectionIndicator
-                color: debuggerConnection.connected ? "green" : "red"
-                width: 15
-                height: width
-                radius: width * 0.5
-                gradient: Gradient {
-                    GradientStop { color: connectionIndicator.color; position: 0.0}
-                    GradientStop { color: Qt.darker(connectionIndicator.color, 1.25); position: 1.0}
-                }
-            }
-            Text {
-                font.family: robotoFont.name
-                color: "white"
-                text: debuggerConnection.connected ? "Connected" : "Disconnected"
-            }
-        }
-
-        CommandTerminal {
-            anchors {
-                left: parent.left
-                right: parent.right
-                top: parent.top
-                topMargin: bottomBar.closedHeight
-                bottom: parent.bottom
-            }
-            enabled: debuggerConnection.connected
-            visible: height > 0
-            onCommandEntered: {
-                debuggerConnection.executeCommand(command);
-            }
         }
     }
 

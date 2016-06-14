@@ -44,7 +44,7 @@ class DebuggerConnection : public QObject
 public:
     explicit DebuggerConnection(QObject *parent = nullptr);
 
-    Q_INVOKABLE void executeCommand(const QString &command);
+    void executeCommand(const QString &command);
 
     inline bool isConnected() const { return m_connected; }
 
@@ -54,6 +54,7 @@ public:
 Q_SIGNALS:
     void hostChanged();
     void connectedChanged();
+    void replyReceived(const QJsonDocument &reply);
 
 private Q_SLOTS:
     void connectToHost();

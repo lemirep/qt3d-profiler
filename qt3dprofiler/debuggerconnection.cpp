@@ -135,7 +135,7 @@ void DebuggerConnection::onReplyReceived()
                 // Send command to the aspectEngine
                 QJsonObject commandObj = doc.object();
                 const QJsonValue commandNameValue = commandObj.value(QLatin1String("command"));
-
+                emit replyReceived(doc);
             }
 
             m_readBuffer.startIdx += commandPacketSize + header->size;

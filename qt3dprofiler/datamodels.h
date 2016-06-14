@@ -176,6 +176,19 @@ struct JobInfo
     QColor m_color;
 };
 
+struct CommandInfo
+{
+    QString m_name;
+    int m_returnType;
+};
+
+struct Command
+{
+    QVariant data(int role) const;
+
+    QString m_content;
+};
+
 class JobTypeInfoModel : public ListModel<JobInfo>
 {
     Q_OBJECT
@@ -208,6 +221,19 @@ public:
     Q_ENUM(Roles)
 };
 
+class CommandDisplayModel : public ListModel<Command>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        Content = Qt::UserRole + 1
+    };
+    Q_ENUM(Roles)
 
+    Q_INVOKABLE bool clear()
+    {
+        return removeRows(0, rowCount() - 1);
+    }
+};
 
 #endif // DATAMODELS_H

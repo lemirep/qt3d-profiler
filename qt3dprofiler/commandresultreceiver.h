@@ -31,14 +31,22 @@
 #ifndef COMMANDRESULTRECEIVER_H
 #define COMMANDRESULTRECEIVER_H
 
+#include <QHash>
+
 class QJsonObject;
 
 class CommandResultReceiver
 {
 public:
-    CommandResultReceiver();
+    enum CommandType {
+        Text,
+        Unknown
+    };
 
-    void parseCommand(const QJsonObject &reply);
+    static bool canExecuteCommand(const QString &command);
+    static void parseCommand(const QJsonObject &reply);
+
+    static QHash<QString, QHash<QString, CommandResultReceiver::CommandType>> aspectCommandNameToReturnType;
 };
 
 #endif // COMMANDRESULTRECEIVER_H
