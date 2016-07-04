@@ -79,7 +79,7 @@ Window {
         id: pageListView
         model: VisualItemModel {
             JobTraceView { height: ListView.view.height; width: ListView.view.width }
-            Rectangle { color: "red"; height: ListView.view.height; width: ListView.view.width }
+            RenderViewInspector { height: ListView.view.height; width: ListView.view.width }
             Rectangle { color: "blue"; height: ListView.view.height; width: ListView.view.width }
         }
         anchors {

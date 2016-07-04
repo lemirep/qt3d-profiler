@@ -35,14 +35,30 @@
 #include <memory>
 #include <QSharedPointer>
 #include <QColor>
+#include <QRectF>
+#include <QSize>
 
 //////////// Structs for Binary Format of trace files ///////////////
 
 struct FrameHeader
 {
+    FrameHeader()
+        : frameId(0)
+        , jobCount(0)
+        , frameType(WorkerJob)
+    {
+    }
+
+    enum FrameType {
+        WorkerJob = 0,
+        Submission
+    };
+
     quint32 frameId;
-    quint32 jobCount;
+    quint16 jobCount;
+    quint16 frameType; // Submission or worker job
 };
+
 
 union JobId
 {
@@ -234,6 +250,139 @@ public:
     {
         return removeRows(0, rowCount() - 1);
     }
+};
+
+class RenderCommandModel;
+class ShaderParamaterPackModel;
+class ShaderBlockModel;
+class TexturePackModel;
+
+struct RenderViewInfo
+{
+    QVariant data(int role) const;
+
+    QRectF m_viewport;
+    QSize m_surfaceSize;
+    float m_devicePixelRatio;
+    bool m_noDraw;
+    bool m_compute;
+    bool m_frustumCulling;
+    float m_clearDepthValue;
+    float m_clearStencilValue;
+
+    std::unique_ptr<RenderCommandModel> m_renderCommandModel;
+};
+
+struct RenderCommandInfo
+{
+    QVariant data(int role) const;
+
+    int m_instanceCount;
+    int m_shader;
+    int m_vao;
+    int m_geometry;
+    int m_geometryRenderer;
+
+    std::unique_ptr<ShaderParamaterPackModel> m_parameters;
+    std::unique_ptr<ShaderBlockModel> m_ubos;
+    std::unique_ptr<ShaderBlockModel> m_ssbos;
+    std::unique_ptr<TexturePackModel> m_textures;
+};
+
+struct ParameterInfo
+{
+    QVariant data(int role) const;
+
+    QString m_name;
+    QVariant m_value;
+    int m_uniformType; // Value or Texture
+};
+
+struct ShaderBlockInfo
+{
+    QVariant data(int role) const;
+
+    int m_index;
+    int m_bufferId;
+};
+
+struct ShaderTextureInfo
+{
+    QVariant data(int role) const;
+
+    QString m_name;
+    int m_id;
+};
+
+class RenderViewModel : public ListModel<RenderViewInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        Viewport = Qt::UserRole + 1,
+        SurfaceSize,
+        DevicePixelRatio,
+        IsNoDraw,
+        IsCompute,
+        HasFrustumCulling,
+        ClearDepthValue,
+        ClearStencilValue,
+        RenderCommandModel
+    };
+    Q_ENUM(Roles)
+};
+
+class RenderCommandModel : public ListModel<RenderCommandInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        InstanceCount = Qt::UserRole + 1,
+        Shader,
+        Vao,
+        Geometry,
+        GeometryRenderer,
+        Parameters,
+        UBOs,
+        SSBOs,
+        Textures
+    };
+    Q_ENUM(Roles)
+};
+
+class ShaderParamaterPackModel : public ListModel<ParameterInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        Name = Qt::UserRole + 1,
+        Value,
+        UniformType,
+        ValueType
+    };
+    Q_ENUM(Roles)
+};
+
+class ShaderBlockModel : public ListModel<ShaderBlockInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        Index = Qt::UserRole + 1,
+        BufferID
+    };
+    Q_ENUM(Roles)
+};
+
+class TexturePackModel : public ListModel<ShaderTextureInfo>
+{
+    Q_OBJECT
+public:
+    enum Roles {
+        Name = Qt::UserRole + 1,
+        ID
+    };
+    Q_ENUM(Roles)
 };
 
 #endif // DATAMODELS_H

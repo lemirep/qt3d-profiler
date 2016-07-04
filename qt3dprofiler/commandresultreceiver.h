@@ -40,11 +40,12 @@ class CommandResultReceiver
 public:
     enum CommandType {
         Text,
+        RenderView,
         Unknown
     };
 
     static bool canExecuteCommand(const QString &command);
-    static void parseCommand(const QJsonObject &reply);
+    static CommandType parseCommand(const QJsonObject &reply);
 
     static QHash<QString, QHash<QString, CommandResultReceiver::CommandType>> aspectCommandNameToReturnType;
 };

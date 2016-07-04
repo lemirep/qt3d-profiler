@@ -123,21 +123,21 @@ void DebuggerConnection::onReplyReceived()
     const int commandPacketSize = sizeof(CommandHeader);
     while ((m_readBuffer.endIdx - m_readBuffer.startIdx) >= commandPacketSize) {
         CommandHeader *header = reinterpret_cast<CommandHeader *>(m_readBuffer.buffer.data() + m_readBuffer.startIdx);
-        if (header->magic == MagicNumber &&
-                (m_readBuffer.endIdx - (m_readBuffer.startIdx + commandPacketSize)) >= header->size) {
+        if (header->magic == MagicNumber) {
+            // Early return, we wait for all the data to be there
+            if ((m_readBuffer.endIdx - (m_readBuffer.startIdx + commandPacketSize)) < header->size)
+                return ;
             // We have a valid command
             // We expect command to be a CommandHeader + some json text
             const QJsonDocument doc = QJsonDocument::fromJson(
                         QByteArray(m_readBuffer.buffer.data() + m_readBuffer.startIdx + commandPacketSize,
                                    header->size));
-
             if (!doc.isNull()) {
                 // Send command to the aspectEngine
                 QJsonObject commandObj = doc.object();
                 const QJsonValue commandNameValue = commandObj.value(QLatin1String("command"));
                 emit replyReceived(doc);
             }
-
             m_readBuffer.startIdx += commandPacketSize + header->size;
         }
     }

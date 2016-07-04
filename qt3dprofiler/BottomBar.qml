@@ -60,17 +60,26 @@ Item {
 
         Rectangle {
             id: top
-            color: "#333333"
+            color: ma.containsMouse ? Qt.lighter("#333333", 1.5) : "#333333"
+            Behavior on color { ColorAnimation { duration: 250 } }
             anchors {
                 left: parent.left
                 right: parent.right
             }
             height: closedHeight
 
+            MouseArea {
+                id: ma
+                hoverEnabled: true
+                anchors.fill: parent
+                cursorShape: Qt.SizeVerCursor
+                onPressed: { mouse.accepted = false }
+            }
+
             Text {
                 text: "V"
                 font.pointSize: 18
-                color: "grey"
+                color: maExpand.pressed ? "white" : "grey"
                 anchors {
                     right: parent.right
                     verticalCenter: parent.verticalCenter
@@ -79,6 +88,7 @@ Item {
                 rotation: expanded ? 0 : 180
                 Behavior on rotation { NumberAnimation { duration: 500 } }
                 MouseArea {
+                    id: maExpand
                     anchors.fill: parent
                     onClicked: expanded = !expanded
                 }

@@ -16,5 +16,7 @@
         <file>AddButton.qml</file>
         <file>JobTraceView.qml</file>
         <file>Roboto-Regular.ttf</file>
+        <file>RenderViewInspector.qml</file>
+        <file>RenderView.qml</file>
     </qresource>
 </RCC>

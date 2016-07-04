@@ -29,6 +29,8 @@
 ****************************************************************************/
 
 #include "commandresultreceiver.h"
+#include <QJsonObject>
+#include <QDebug>
 
 QHash<QString, QHash<QString, CommandResultReceiver::CommandType>> CommandResultReceiver::aspectCommandNameToReturnType;
 
@@ -42,7 +44,14 @@ bool CommandResultReceiver::canExecuteCommand(const QString &command)
     return availableAspectCommands.contains(commands.at(1));
 }
 
-void CommandResultReceiver::parseCommand(const QJsonObject &reply)
+CommandResultReceiver::CommandType CommandResultReceiver::parseCommand(const QJsonObject &reply)
 {
+    const QString commandNameString = reply.value(QLatin1String("command")).toString().trimmed();
+    const QStringList &commandLine = commandNameString.split(' ');
 
+    qDebug() << Q_FUNC_INFO << commandLine;
+
+    if (commandLine.last() == QLatin1String("rendercommands"))
+        return RenderView;
+    return Text;
 }

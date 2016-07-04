@@ -33,10 +33,12 @@
 #include "jobstatsreader.h"
 #include "debuggerconnection.h"
 #include "commandresultreceiver.h"
+#include "rendercommandparser.h"
 #include <QJsonDocument>
 #include <QJsonArray>
 #include <QJsonObject>
 #include <QFile>
+#include <QDebug>
 
 BackendInterfacer::BackendInterfacer(QObject *parent)
     : QObject(parent)
@@ -70,6 +72,11 @@ QAbstractListModel *BackendInterfacer::commandDisplayModel() const
     return m_commandDisplayModel.data();
 }
 
+QAbstractListModel *BackendInterfacer::renderViewModel() const
+{
+    return m_renderViewModel.data();
+}
+
 DebuggerConnection *BackendInterfacer::debuggerConnection() const
 {
     return m_debuggerConnection.data();
@@ -89,19 +96,33 @@ void BackendInterfacer::executeCommand(const QString &command)
 {
     m_commandDisplayModel->insertRow({QLatin1String("qt3d:> ") + command});
 
-    if (CommandResultReceiver::canExecuteCommand(command))
+    if (CommandResultReceiver::canExecuteCommand(command)) {
         m_debuggerConnection->executeCommand(command);
-    else
+    } else {
         m_commandDisplayModel->insertRow({QLatin1String("No such command: ") + command});
+    }
 }
 
 void BackendInterfacer::commandReplyReceived(const QJsonDocument &reply)
 {
-    CommandResultReceiver::parseCommand(reply.object());
-    m_commandDisplayModel->insertRow({QString::fromLatin1(reply.toJson())});
-    // If there are more than 15 old commands, remove the oldest ones
-    if (m_commandDisplayModel->rowCount() > 15)
-        m_commandDisplayModel->removeRows(0);
+    const QJsonObject replyObject = reply.object();
+    const CommandResultReceiver::CommandType commandType = CommandResultReceiver::parseCommand(replyObject);
+
+    switch (commandType) {
+
+    case CommandResultReceiver::RenderView:
+        m_renderViewModel.reset(RenderCommandParser::parseRenderViews(replyObject.value(QLatin1String("data")).toObject()));
+        emit renderViewModelChanged();
+        break;
+
+    case CommandResultReceiver::Text:
+    default:
+        m_commandDisplayModel->insertRow({QString::fromLatin1(reply.toJson())});
+        // If there are more than 15 old commands, remove the oldest ones
+        if (m_commandDisplayModel->rowCount() > 15)
+            m_commandDisplayModel->removeRows(0);
+        break;
+    }
 }
 
 float BackendInterfacer::msecToPixelScale() const

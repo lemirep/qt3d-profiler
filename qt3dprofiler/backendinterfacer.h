@@ -38,6 +38,7 @@ class AspectInfoModel;
 class JobTracesModel;
 class CommandDisplayModel;
 class DebuggerConnection;
+class RenderViewModel;
 
 class BackendInterfacer : public QObject
 {
@@ -46,6 +47,7 @@ class BackendInterfacer : public QObject
     Q_PROPERTY(QAbstractListModel *aspectInfoModel READ aspectInfoModel CONSTANT)
     Q_PROPERTY(QAbstractListModel *jobTracesModel READ jobTracesModel CONSTANT)
     Q_PROPERTY(QAbstractListModel *commandDisplayModel READ commandDisplayModel CONSTANT)
+    Q_PROPERTY(QAbstractListModel *renderViewModel READ renderViewModel NOTIFY renderViewModelChanged)
     Q_PROPERTY(DebuggerConnection *debuggerConnection READ debuggerConnection CONSTANT)
 
 public:
@@ -58,6 +60,7 @@ public:
     QAbstractListModel *aspectInfoModel() const;
     QAbstractListModel *jobTracesModel() const;
     QAbstractListModel *commandDisplayModel() const;
+    QAbstractListModel *renderViewModel() const;
     DebuggerConnection *debuggerConnection() const;
 
     Q_INVOKABLE void addTraceFile(const QUrl &fileUrl);
@@ -66,6 +69,7 @@ public:
 
 Q_SIGNALS:
     void msecToPixelScaleChanged();
+    void renderViewModelChanged();
 
 private Q_SLOTS:
     void commandReplyReceived(const QJsonDocument &reply);
@@ -78,6 +82,7 @@ private:
     QScopedPointer<JobTracesModel> m_jobTracesModel;
     QScopedPointer<CommandDisplayModel> m_commandDisplayModel;
     QScopedPointer<DebuggerConnection> m_debuggerConnection;
+    QScopedPointer<RenderViewModel> m_renderViewModel;
 };
 
 #endif // BACKENDINTERFACER_H

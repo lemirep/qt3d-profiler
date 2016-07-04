@@ -139,3 +139,93 @@ QVariant Command::data(int role) const
         return QVariant();
     }
 }
+
+QVariant RenderCommandInfo::data(int role) const
+{
+    switch (role) {
+    case RenderCommandModel::InstanceCount:
+        return m_instanceCount;
+    case RenderCommandModel::Shader:
+        return m_shader;
+    case RenderCommandModel::Vao:
+        return m_vao;
+    case RenderCommandModel::Geometry:
+        return m_geometry;
+    case RenderCommandModel::GeometryRenderer:
+        return m_geometryRenderer;
+    case RenderCommandModel::Parameters:
+        return QVariant::fromValue(m_parameters.get());
+    case RenderCommandModel::UBOs:
+        return QVariant::fromValue(m_ubos.get());
+    case RenderCommandModel::SSBOs:
+        return QVariant::fromValue(m_ssbos.get());
+    case RenderCommandModel::Textures:
+        return QVariant::fromValue(m_textures.get());
+    default:
+        return QVariant();
+    }
+}
+
+QVariant RenderViewInfo::data(int role) const
+{
+    switch (role) {
+    case RenderViewModel::Viewport:
+        return m_viewport;
+    case RenderViewModel::SurfaceSize:
+        return m_surfaceSize;
+    case RenderViewModel::DevicePixelRatio:
+        return m_devicePixelRatio;
+    case RenderViewModel::IsNoDraw:
+        return m_noDraw;
+    case RenderViewModel::IsCompute:
+        return m_compute;
+    case RenderViewModel::HasFrustumCulling:
+        return m_frustumCulling;
+    case RenderViewModel::ClearDepthValue:
+        return m_clearDepthValue;
+    case RenderViewModel::ClearStencilValue:
+        return m_clearStencilValue;
+    case RenderViewModel::RenderCommandModel:
+        return QVariant::fromValue(m_renderCommandModel.get());
+    default:
+        return QVariant();
+    }
+}
+
+QVariant ParameterInfo::data(int role) const
+{
+    switch (role) {
+    case ShaderParamaterPackModel::Name:
+        return m_name;
+    case ShaderParamaterPackModel::Value:
+        return m_value;
+    case ShaderParamaterPackModel::UniformType:
+        return m_uniformType;
+    default:
+        return QVariant();
+    }
+}
+
+QVariant ShaderTextureInfo::data(int role) const
+{
+    switch (role) {
+    case TexturePackModel::Name:
+        return m_name;
+    case TexturePackModel::ID:
+        return m_id;
+    default:
+        return QVariant();
+    }
+}
+
+QVariant ShaderBlockInfo::data(int role) const
+{
+    switch (role) {
+    case ShaderBlockModel::Index:
+        return m_index;
+    case ShaderBlockModel::BufferID:
+        return m_bufferId;
+    default:
+        return QVariant();
+    }
+}

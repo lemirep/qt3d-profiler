@@ -8,7 +8,8 @@ SOURCES += main.cpp \
     debuggerconnection.cpp \
     commandresultreceiver.cpp \
     backendinterfacer.cpp \
-    datamodels.cpp
+    datamodels.cpp \
+    rendercommandparser.cpp
 
 HEADERS += \
     listmodel.h \
@@ -16,7 +17,8 @@ HEADERS += \
     debuggerconnection.h \
     commandresultreceiver.h \
     backendinterfacer.h \
-    datamodels.h
+    datamodels.h \
+    rendercommandparser.h
 
 RESOURCES += \
     qml.qrc
