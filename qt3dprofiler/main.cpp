@@ -30,19 +30,19 @@
 
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include "backendinterfacer.h"
+#include "profiler.h"
 #include "debuggerconnection.h"
 
 QObject *singletonProvider(QQmlEngine *, QJSEngine *)
 {
-    return new BackendInterfacer();
+    return new Profiler();
 }
 
 int main(int ac, char **av)
 {
     QGuiApplication app(ac, av);
     QQmlApplicationEngine engine;
-    qmlRegisterSingletonType<BackendInterfacer>("Profiler", 1, 0, "Singleton", &singletonProvider);
+    qmlRegisterSingletonType<Profiler>("Profiler", 1, 0, "Singleton", &singletonProvider);
     qmlRegisterUncreatableType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection", QLatin1String("Uncreatable type"));
 
     engine.load(QUrl("qrc:/main.qml"));

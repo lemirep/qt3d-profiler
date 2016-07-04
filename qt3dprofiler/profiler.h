@@ -28,8 +28,8 @@
 **
 ****************************************************************************/
 
-#ifndef BACKENDINTERFACER_H
-#define BACKENDINTERFACER_H
+#ifndef PROFILER_H
+#define PROFILER_H
 
 #include <QObject>
 #include <QAbstractListModel>
@@ -40,7 +40,7 @@ class CommandDisplayModel;
 class DebuggerConnection;
 class RenderViewModel;
 
-class BackendInterfacer : public QObject
+class Profiler : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(float msecToPixelScale READ msecToPixelScale WRITE setMsecToPixelScale NOTIFY msecToPixelScaleChanged)
@@ -58,8 +58,8 @@ public:
     };
     Q_ENUM(FrameType)
 
-    explicit BackendInterfacer(QObject *parent = nullptr);
-    ~BackendInterfacer();
+    explicit Profiler(QObject *parent = nullptr);
+    ~Profiler();
 
     void setMsecToPixelScale(float scale);
     float msecToPixelScale() const;
@@ -92,4 +92,4 @@ private:
     QScopedPointer<RenderViewModel> m_renderViewModel;
 };
 
-#endif // BACKENDINTERFACER_H
+#endif // PROFILER_H

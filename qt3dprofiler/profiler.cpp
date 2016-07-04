@@ -28,7 +28,7 @@
 **
 ****************************************************************************/
 
-#include "backendinterfacer.h"
+#include "profiler.h"
 #include "datamodels.h"
 #include "jobstatsreader.h"
 #include "debuggerconnection.h"
@@ -40,7 +40,7 @@
 #include <QFile>
 #include <QDebug>
 
-BackendInterfacer::BackendInterfacer(QObject *parent)
+Profiler::Profiler(QObject *parent)
     : QObject(parent)
     , m_msecToPixelScale(50.0f)
     , m_aspectInfoModel(new AspectInfoModel)
@@ -49,50 +49,50 @@ BackendInterfacer::BackendInterfacer(QObject *parent)
     , m_debuggerConnection(new DebuggerConnection(this))
 {
     QObject::connect(m_debuggerConnection.data(), &DebuggerConnection::replyReceived,
-                     this, &BackendInterfacer::commandReplyReceived);
+                     this, &Profiler::commandReplyReceived);
     parseConfigFile(QLatin1Literal(":/config.json"));
 }
 
-BackendInterfacer::~BackendInterfacer()
+Profiler::~Profiler()
 {
 }
 
-QAbstractListModel *BackendInterfacer::aspectInfoModel() const
+QAbstractListModel *Profiler::aspectInfoModel() const
 {
     return m_aspectInfoModel.data();
 }
 
-QAbstractListModel *BackendInterfacer::jobTracesModel() const
+QAbstractListModel *Profiler::jobTracesModel() const
 {
     return m_jobTracesModel.data();
 }
 
-QAbstractListModel *BackendInterfacer::commandDisplayModel() const
+QAbstractListModel *Profiler::commandDisplayModel() const
 {
     return m_commandDisplayModel.data();
 }
 
-QAbstractListModel *BackendInterfacer::renderViewModel() const
+QAbstractListModel *Profiler::renderViewModel() const
 {
     return m_renderViewModel.data();
 }
 
-DebuggerConnection *BackendInterfacer::debuggerConnection() const
+DebuggerConnection *Profiler::debuggerConnection() const
 {
     return m_debuggerConnection.data();
 }
 
-void BackendInterfacer::addTraceFile(const QUrl &fileUrl)
+void Profiler::addTraceFile(const QUrl &fileUrl)
 {
     m_jobTracesModel->insertRow(std::move(JobStatsReader::readTraceFile(fileUrl)));
 }
 
-void BackendInterfacer::removeTrace(int idx)
+void Profiler::removeTrace(int idx)
 {
     m_jobTracesModel->removeRows(idx);
 }
 
-void BackendInterfacer::executeCommand(const QString &command)
+void Profiler::executeCommand(const QString &command)
 {
     m_commandDisplayModel->insertRow({QLatin1String("qt3d:> ") + command});
 
@@ -103,7 +103,7 @@ void BackendInterfacer::executeCommand(const QString &command)
     }
 }
 
-void BackendInterfacer::commandReplyReceived(const QJsonDocument &reply)
+void Profiler::commandReplyReceived(const QJsonDocument &reply)
 {
     const QJsonObject replyObject = reply.object();
     const CommandResultReceiver::CommandType commandType = CommandResultReceiver::parseCommand(replyObject);
@@ -125,12 +125,12 @@ void BackendInterfacer::commandReplyReceived(const QJsonDocument &reply)
     }
 }
 
-float BackendInterfacer::msecToPixelScale() const
+float Profiler::msecToPixelScale() const
 {
     return m_msecToPixelScale;
 }
 
-void BackendInterfacer::setMsecToPixelScale(float scale)
+void Profiler::setMsecToPixelScale(float scale)
 {
     if (m_msecToPixelScale != scale) {
         m_msecToPixelScale = scale;
@@ -138,7 +138,7 @@ void BackendInterfacer::setMsecToPixelScale(float scale)
     }
 }
 
-void BackendInterfacer::parseConfigFile(const QString &filePath)
+void Profiler::parseConfigFile(const QString &filePath)
 {
     QFile configFile(filePath);
     if (!configFile.open(QIODevice::ReadOnly)) {
