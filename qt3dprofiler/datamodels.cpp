@@ -51,6 +51,10 @@ QVariant Job::data(int role) const
         return m_name;
     case JobModel::Color:
         return m_color;
+    case JobModel::RelativeEnd:
+        return m_relativeEnd;
+    case JobModel::RelativeStart:
+        return m_relativeStart;
     default:
         return QVariant();
     }
@@ -83,6 +87,14 @@ QVariant Frame::data(int role) const
         return m_totalDuration;
     case FrameModel::StartTime:
         return m_startTime;
+    case FrameModel::StartTimeMS:
+        return m_startTime / 1000000;
+    case FrameModel::TotalDurationMS:
+        return m_totalDuration / 1000000;
+    case FrameModel::FrameType:
+        return m_frameType;
+    case FrameModel::TimeSinceLastFrameMS:
+        return m_timeSinceEndOfLastFrame / 1000000;
     default:
         return QVariant();
     }
@@ -91,8 +103,10 @@ QVariant Frame::data(int role) const
 QVariant JobTraces::data(int role) const
 {
     switch (role) {
-    case JobTracesModel::JobFramesModel:
-        return QVariant::fromValue(m_jobStatsModel.get());
+    case JobTracesModel::WorkerJobFramesModel:
+        return QVariant::fromValue(m_workJobStatsModel.get());
+    case JobTracesModel::SubmissionJobFramesModel:
+        return QVariant::fromValue(m_submissionJobStatsModel.get());
     case JobTracesModel::ThreadCount:
         return m_threadCount;
     case JobTracesModel::TotalDuration:

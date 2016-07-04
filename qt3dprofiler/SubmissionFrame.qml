@@ -28,26 +28,31 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
+import Profiler 1.0
 
 Item {
-    property alias jobModel: jobRepeater.model
-    property int threadId
+    id: root
+    property alias threadsModel: threadRepeater.model
+    property int threadCount
+    property int frameId
+    property int frameType
+    property real totalDuration // in ms
+    property real startTime // in ms
+    property real timeSinceLastFrame // in ms
+
+    readonly property int totalFrameTime: timeSinceLastFrame + totalDuration
+
+    // Do not specify a size for submission as these can be in between 2 frames
+    width: Math.max(childrenRect.width, totalFrameTime * Singleton.msecToPixelScale)
     height: childrenRect.height
-    width: childrenRect.width
-    y: threadId * 55
 
     Repeater {
-        id: jobRepeater
-        Job {
-            start: model.FrameStart
-            end: model.FrameEnd
-            type: model.Type
-            instance: model.InstanceId
-            color: model.Color
-            name: model.Name
-            relativeStart: model.RelativeStart
-            relativeEnd: model.RelativeEnd
+        id: threadRepeater
+        Thread {
+            jobModel: model.JobModel
+            threadId: model.Id
+            x: timeSinceLastFrame * Singleton.msecToPixelScale
         }
     }
 }

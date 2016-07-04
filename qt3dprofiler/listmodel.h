@@ -125,6 +125,11 @@ public:
         return removeRows(0, rowCount() - 1);
     }
 
+    std::vector<T> &items()
+    {
+        return m_items;
+    }
+
 private:
     std::vector<T> m_items;
 };

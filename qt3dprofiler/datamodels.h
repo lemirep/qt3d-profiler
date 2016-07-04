@@ -90,6 +90,8 @@ public:
     qint64 m_frameEnd;
     QString m_name;
     QColor m_color;
+    qint64 m_relativeStart;
+    qint64 m_relativeEnd;
 };
 
 class Thread
@@ -110,6 +112,8 @@ public:
     QSharedPointer<ThreadModel> m_threadModel;
     quint64 m_totalDuration;
     quint64 m_startTime;
+    int m_frameType;
+    quint64 m_timeSinceEndOfLastFrame;
 };
 
 class JobTraces
@@ -117,7 +121,8 @@ class JobTraces
 public:
     QVariant data(int role) const;
 
-    std::unique_ptr<FrameModel> m_jobStatsModel;
+    std::unique_ptr<FrameModel> m_workJobStatsModel;
+    std::unique_ptr<FrameModel> m_submissionJobStatsModel;
     int m_threadCount = 0;
     quint64 m_totalDuration = 0;
     QString m_title;
@@ -137,7 +142,9 @@ public:
         FrameStart, // Relative to the total duration of a frame
         FrameEnd,
         Name,
-        Color
+        Color,
+        RelativeStart,
+        RelativeEnd
     };
     Q_ENUM(Roles)
 };
@@ -163,7 +170,11 @@ public:
         ThreadCount,
         ThreadsModel,
         StartTime,
-        TotalDuration
+        TotalDuration,
+        FrameType,
+        StartTimeMS,
+        TotalDurationMS,
+        TimeSinceLastFrameMS
     };
     Q_ENUM(Roles)
 };
@@ -173,7 +184,8 @@ class JobTracesModel : public ListModel<JobTraces>
     Q_OBJECT
 public:
     enum Roles {
-        JobFramesModel = Qt::UserRole + 1,
+        WorkerJobFramesModel = Qt::UserRole + 1,
+        SubmissionJobFramesModel,
         ThreadCount,
         TotalDuration,
         Title

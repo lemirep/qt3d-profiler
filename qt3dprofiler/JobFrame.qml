@@ -36,16 +36,21 @@ Item {
     property alias threadsModel: threadRepeater.model
     property int threadCount
     property int frameId
-    property int totalDuration // in nsec
-    property real startTime
+    property int frameType
+    property real totalDuration // in ms
+    property real startTime // in ms
+    property real timeSinceLastFrame // in ms
 
-    width: childrenRect.width
+    readonly property int totalFrameTime: timeSinceLastFrame + totalDuration
+
+    // Do not specify a size for submission as these can be in between 2 frames
+    width: Math.max(childrenRect.width, totalFrameTime * Singleton.msecToPixelScale)
     height: childrenRect.height
 
     // Duration bars
     Repeater {
         id: durationBarRepeater
-        model: Math.floor(totalDuration * 0.000001) // -> to ms
+        model: Math.max(0, Math.floor(totalFrameTime)) // -> to ms
         Rectangle {
             width: 1
             height: root.height
@@ -81,11 +86,13 @@ Item {
         }
     }
 
+    // Draw jobs relative to Frame Start
     Repeater {
         id: threadRepeater
         Thread {
             jobModel: model.JobModel
             threadId: model.Id
+            x: timeSinceLastFrame * Singleton.msecToPixelScale
         }
     }
 

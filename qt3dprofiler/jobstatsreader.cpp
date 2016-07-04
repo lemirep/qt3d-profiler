@@ -43,7 +43,9 @@ JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
     QFile file(fileUrl.toLocalFile());
     JobTraces traceEntry;
 
-    traceEntry.m_jobStatsModel.reset(new FrameModel);
+    traceEntry.m_workJobStatsModel.reset(new FrameModel);
+    traceEntry.m_submissionJobStatsModel.reset(new FrameModel);
+    QHash<int, qint64> lastEndTimesPerType;
 
     if (file.open(QFile::ReadOnly)) {
         const int sizeOfHeader = sizeof(FrameHeader);
@@ -98,20 +100,25 @@ JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 startTime = std::min(job.m_jobStats.startTime, startTime);
             }
 
+            if (startTime == std::numeric_limits<qint64>::max())
+                startTime = 0;
+            if (endTime == std::numeric_limits<qint64>::min())
+                endTime = startTime;
+
             for (int i = 0, m = jobs.size(); i < m; ++i) {
                 Job &job = jobs[i];
-                job.m_frameStart = job.m_jobStats.startTime - startTime;
-                job.m_frameEnd = job.m_jobStats.endTime - startTime;
+                job.m_frameStart = job.m_jobStats.startTime;
+                job.m_frameEnd = job.m_jobStats.endTime;
+                job.m_relativeStart = (job.m_jobStats.startTime - startTime);
+                job.m_relativeEnd = (job.m_jobStats.endTime - startTime);
             }
 
             Frame f;
             f.m_header = std::move(*header);
             f.m_threadModel.reset(new ThreadModel);
+            f.m_frameType = header->frameType;
             f.m_startTime = startTime;
             f.m_totalDuration = endTime - startTime;
-
-            if (traceEntry.m_totalDuration == 0)
-                traceEntry.m_totalDuration = -f.m_startTime;
 
             traceEntry.m_totalDuration += f.m_totalDuration;
 
@@ -133,9 +140,33 @@ JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
                 f.m_threadModel->insertRow(t);
             }
 
-            traceEntry.m_jobStatsModel->insertRow(f);
+            if (f.m_frameType == FrameHeader::WorkerJob)
+                traceEntry.m_workJobStatsModel->insertRow(f);
+            else
+                traceEntry.m_submissionJobStatsModel->insertRow(f);
         } // Repeat
         traceEntry.m_threadCount = threadIds.size();
+
+        // Fill offset duration
+        {
+            std::vector<Frame> &items = traceEntry.m_workJobStatsModel->items();
+            for (int i = 1, m = items.size(); i < m; ++i) {
+                const Frame previousFrame = items.at(i - 1);
+                quint64 lastTime = previousFrame.m_startTime + previousFrame.m_totalDuration;
+                Frame &currentFrame = items[i];
+                currentFrame.m_timeSinceEndOfLastFrame = currentFrame.m_startTime - lastTime;
+            }
+        }
+        {
+            std::vector<Frame> &items = traceEntry.m_submissionJobStatsModel->items();
+            for (int i = 1, m = items.size(); i < m; ++i) {
+                const Frame previousFrame = items.at(i - 1);
+                quint64 lastTime = previousFrame.m_startTime + previousFrame.m_totalDuration;
+                Frame &currentFrame = items[i];
+                currentFrame.m_timeSinceEndOfLastFrame = currentFrame.m_startTime - lastTime;
+            }
+        }
+
         qDebug() << Q_FUNC_INFO << "Done";
     } else {
         qDebug() << Q_FUNC_INFO << "Failure to open";

@@ -42,7 +42,8 @@ Item {
 
     property int threadCount
     property real frameTotalDuration
-    property alias jobStatsModel: listView.model
+    property alias workerJobStatsModel: workerJobListView.model
+    property alias submissionJobStatsModel: submissionJobListView.model
     property alias frameTitle: titleText.text
 
     Item {
@@ -186,28 +187,55 @@ Item {
             right: backgroundBandColumn.right
             top: sideBar.top
         }
-        ListView {
-            id: listView
+
+
+        Item {
             anchors {
                 left: parent.left
                 right: parent.right
             }
             height: sideBar.height
-            orientation: ListView.Horizontal
-            preferredHighlightBegin: 0
-            preferredHighlightEnd: width
-            highlightRangeMode: ListView.ApplyRange
-            highlightMoveDuration: -1
-            highlightMoveVelocity: -1
-            spacing: 10
-            delegate: JobFrame {
-                threadsModel: model.ThreadsModel
-                threadCount: model.ThreadCount
-                frameId: model.Id
-                totalDuration: model.TotalDuration
-                startTime: model.StartTime * nsecToMSec
-            }
             clip: true
+            ListView {
+                id: submissionJobListView
+                anchors.fill: parent
+                orientation: ListView.Horizontal
+                preferredHighlightBegin: 0
+                preferredHighlightEnd: width
+                highlightRangeMode: ListView.ApplyRange
+                highlightMoveDuration: -1
+                highlightMoveVelocity: -1
+                spacing: 10
+                delegate:  SubmissionFrame {
+                    threadsModel: model.ThreadsModel
+                    threadCount: model.ThreadCount
+                    frameId: model.Id
+                    totalDuration: model.TotalDurationMS
+                    startTime: model.StartTimeMS
+                    timeSinceLastFrame: model.TimeSinceLastFrameMS
+                }
+                contentX: workerJobListView.contentX
+                currentIndex: workerJobListView.currentIndex
+            }
+            ListView {
+                id: workerJobListView
+                anchors.fill: parent
+                orientation: ListView.Horizontal
+                preferredHighlightBegin: 0
+                preferredHighlightEnd: width
+                highlightRangeMode: ListView.ApplyRange
+                highlightMoveDuration: -1
+                highlightMoveVelocity: -1
+                spacing: 10
+                delegate:  JobFrame {
+                    threadsModel: model.ThreadsModel
+                    threadCount: model.ThreadCount
+                    frameId: model.Id
+                    totalDuration: model.TotalDurationMS
+                    startTime: model.StartTimeMS
+                    timeSinceLastFrame: model.TimeSinceLastFrameMS
+                }
+            }
         }
 
         ListView {
@@ -218,9 +246,9 @@ Item {
                 right: parent.right
             }
             clip: true
-            model: listView.model.rowCount()
+            model: workerJobListView.model.rowCount()
             orientation: ListView.Horizontal
-            currentIndex: listView.currentIndex
+            currentIndex: workerJobListView.currentIndex
             delegate: Rectangle {
                 id: smallDel
                 height: 35
@@ -256,7 +284,7 @@ Item {
                 }
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: listView.currentIndex = model.index
+                    onClicked: workerJobListView.currentIndex = model.index
                 }
             }
 

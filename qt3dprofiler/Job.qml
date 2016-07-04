@@ -33,12 +33,13 @@ import Profiler 1.0
 
 Rectangle {
     id: root
-    property int start
-    property int end
+    property int start // ns
+    property int end // ns
     property int type
     property int instance
-    readonly property real nsecToMSec: 0.000001
-    readonly property real duration: (end - start) * nsecToMSec
+    property int relativeStart // ns
+    property int relativeEnd // ns
+    readonly property real duration: (relativeEnd - relativeStart) * nsecToMSec // ms
     property bool collapsed: false
     property string name
 
@@ -46,7 +47,7 @@ Rectangle {
     y: model.index % 2 ? frameView.barHeight * 0.5 : 1
     readonly property int maxWidth: Math.max(Singleton.msecToPixelScale * duration, 2)
     width: collapsed ? Math.min(maxWidth, 200) : maxWidth
-    x: start * nsecToMSec * Singleton.msecToPixelScale
+    x: relativeStart * nsecToMSec * Singleton.msecToPixelScale // ms
 
     gradient: Gradient {
         GradientStop { color: Qt.lighter(root.color, ma.containsMouse ? 1.25 : 1); position: 0.0}
@@ -79,6 +80,8 @@ Rectangle {
             frameView.jobHighLight.color = root.color
             frameView.jobHighLight.start = root.start
             frameView.jobHighLight.end = root.end
+            frameView.jobHighLight.relativeStart = root.relativeStart
+            frameView.jobHighLight.relativeEnd = root.relativeEnd
             frameView.jobHighLight.type = root.type
             frameView.jobHighLight.instance = root.instance
             frameView.jobHighLight.duration = root.duration

@@ -18,5 +18,6 @@
         <file>Roboto-Regular.ttf</file>
         <file>RenderViewInspector.qml</file>
         <file>RenderView.qml</file>
+        <file>SubmissionFrame.qml</file>
     </qresource>
 </RCC>

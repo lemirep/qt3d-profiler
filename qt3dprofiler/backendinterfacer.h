@@ -51,6 +51,13 @@ class BackendInterfacer : public QObject
     Q_PROPERTY(DebuggerConnection *debuggerConnection READ debuggerConnection CONSTANT)
 
 public:
+
+    enum FrameType {
+        Worker = 0,
+        Submission
+    };
+    Q_ENUM(FrameType)
+
     explicit BackendInterfacer(QObject *parent = nullptr);
     ~BackendInterfacer();
 

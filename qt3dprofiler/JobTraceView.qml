@@ -81,7 +81,8 @@ Item {
                     model: Singleton.jobTracesModel
                     FrameJobView {
                         threadCount: model.ThreadCount
-                        jobStatsModel: model.JobFramesModel
+                        workerJobStatsModel: model.WorkerJobFramesModel
+                        submissionJobStatsModel: model.SubmissionJobFramesModel
                         frameTotalDuration: model.TotalDuration
                         frameTitle: model.Title
                     }

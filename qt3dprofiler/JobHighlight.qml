@@ -36,6 +36,8 @@ Item {
     property int type
     property int start
     property int end
+    property int relativeStart
+    property int relativeEnd
     property real duration
     property int instance
     property color color
@@ -83,7 +85,7 @@ Item {
         }
         Text {
             color: "white"
-            text: "Start: "
+            text: "Start (global): "
         }
         Text {
             color: "white"
@@ -91,11 +93,27 @@ Item {
         }
         Text {
             color: "white"
-            text: "End: "
+            text: "End (global): "
         }
         Text {
             color: "white"
             text: end + " ns"
+        }
+        Text {
+            color: "white"
+            text: "Start (relative): "
+        }
+        Text {
+            color: "white"
+            text: relativeStart + " ns"
+        }
+        Text {
+            color: "white"
+            text: "End (relative): "
+        }
+        Text {
+            color: "white"
+            text: relativeEnd + " ns"
         }
         Text {
             color: "white"
