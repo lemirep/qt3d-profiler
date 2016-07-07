@@ -77,7 +77,6 @@ struct JobRunStats
 ////////////// Job Models ///////////////
 
 class JobModel;
-class ThreadModel;
 class FrameModel;
 
 class Job
@@ -92,37 +91,17 @@ public:
     QColor m_color;
     qint64 m_relativeStart;
     qint64 m_relativeEnd;
-};
-
-class Thread
-{
-public:
-    QVariant data(int role) const;
-
-    QSharedPointer<JobModel> m_jobModel;
+    float m_x;
     int m_threadId;
 };
 
-class Frame
-{
-public:
-    QVariant data(int role) const;
-
-    FrameHeader m_header;
-    QSharedPointer<ThreadModel> m_threadModel;
-    quint64 m_totalDuration;
-    quint64 m_startTime;
-    int m_frameType;
-    quint64 m_timeSinceEndOfLastFrame;
-};
 
 class JobTraces
 {
 public:
     QVariant data(int role) const;
 
-    std::unique_ptr<FrameModel> m_workJobStatsModel;
-    std::unique_ptr<FrameModel> m_submissionJobStatsModel;
+    std::unique_ptr<JobModel> m_jobModel;
     int m_threadCount = 0;
     quint64 m_totalDuration = 0;
     QString m_title;
@@ -144,37 +123,9 @@ public:
         Name,
         Color,
         RelativeStart,
-        RelativeEnd
-    };
-    Q_ENUM(Roles)
-};
-
-class ThreadModel : public ListModel<Thread>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        Id = Qt::UserRole + 1,
-        JobCount,
-        JobModel
-    };
-    Q_ENUM(Roles)
-};
-
-class FrameModel : public ListModel<Frame>
-{
-    Q_OBJECT
-public:
-    enum Roles {
-        Id = Qt::UserRole + 1,
-        ThreadCount,
-        ThreadsModel,
-        StartTime,
-        TotalDuration,
-        FrameType,
-        StartTimeMS,
-        TotalDurationMS,
-        TimeSinceLastFrameMS
+        RelativeEnd,
+        X,
+        ThreadId
     };
     Q_ENUM(Roles)
 };
@@ -184,8 +135,7 @@ class JobTracesModel : public ListModel<JobTraces>
     Q_OBJECT
 public:
     enum Roles {
-        WorkerJobFramesModel = Qt::UserRole + 1,
-        SubmissionJobFramesModel,
+        JobsModel,
         ThreadCount,
         TotalDuration,
         Title

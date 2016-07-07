@@ -43,9 +43,8 @@ JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
     QFile file(fileUrl.toLocalFile());
     JobTraces traceEntry;
 
-    traceEntry.m_workJobStatsModel.reset(new FrameModel);
-    traceEntry.m_submissionJobStatsModel.reset(new FrameModel);
-    QHash<int, qint64> lastEndTimesPerType;
+    traceEntry.m_jobModel.reset(new JobModel);
+    std::vector<Job> frameJobs;
 
     if (file.open(QFile::ReadOnly)) {
         const int sizeOfHeader = sizeof(FrameHeader);
@@ -105,67 +104,31 @@ JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
             if (endTime == std::numeric_limits<qint64>::min())
                 endTime = startTime;
 
+            traceEntry.m_totalDuration += (endTime - startTime);
+
+            // Compute thread count base on thread ids
+            for (int i = 0, m = jobs.size(); i < m;) {
+                const int j = i;
+                while (i < m && jobs[j].m_jobStats.threadId == jobs[i].m_jobStats.threadId)
+                    ++i;
+                if (!threadIds.contains(jobs[j].m_jobStats.threadId))
+                    threadIds.push_back(jobs[j].m_jobStats.threadId);
+            }
+
             for (int i = 0, m = jobs.size(); i < m; ++i) {
                 Job &job = jobs[i];
                 job.m_frameStart = job.m_jobStats.startTime;
                 job.m_frameEnd = job.m_jobStats.endTime;
                 job.m_relativeStart = (job.m_jobStats.startTime - startTime);
                 job.m_relativeEnd = (job.m_jobStats.endTime - startTime);
+                job.m_x = job.m_frameStart * 0.000001;
+                job.m_threadId = threadIds.indexOf(job.m_jobStats.threadId) + 1;
             }
 
-            Frame f;
-            f.m_header = std::move(*header);
-            f.m_threadModel.reset(new ThreadModel);
-            f.m_frameType = header->frameType;
-            f.m_startTime = startTime;
-            f.m_totalDuration = endTime - startTime;
-
-            traceEntry.m_totalDuration += f.m_totalDuration;
-
-            for (int i = 0, m = jobs.size(); i < m;) {
-                const int j = i;
-                while (i < m && jobs[j].m_jobStats.threadId == jobs[i].m_jobStats.threadId)
-                    ++i;
-                // Create a Thread Model for each unique thread
-                Thread t;
-
-                if (!threadIds.contains(jobs[j].m_jobStats.threadId))
-                    threadIds.push_back(jobs[j].m_jobStats.threadId);
-
-                t.m_threadId = threadIds.indexOf(jobs[j].m_jobStats.threadId) + 1;
-                t.m_jobModel.reset(new JobModel);
-                auto first = std::make_move_iterator(jobs.begin() + j);
-                auto last = std::make_move_iterator(jobs.begin() + i);
-                t.m_jobModel->insertRows(std::vector<Job>(first, last));
-                f.m_threadModel->insertRow(t);
-            }
-
-            if (f.m_frameType == FrameHeader::WorkerJob)
-                traceEntry.m_workJobStatsModel->insertRow(f);
-            else
-                traceEntry.m_submissionJobStatsModel->insertRow(f);
+           frameJobs.insert(frameJobs.end(), jobs.begin(), jobs.end());
         } // Repeat
         traceEntry.m_threadCount = threadIds.size();
-
-        // Fill offset duration
-        {
-            std::vector<Frame> &items = traceEntry.m_workJobStatsModel->items();
-            for (int i = 1, m = items.size(); i < m; ++i) {
-                const Frame previousFrame = items.at(i - 1);
-                quint64 lastTime = previousFrame.m_startTime + previousFrame.m_totalDuration;
-                Frame &currentFrame = items[i];
-                currentFrame.m_timeSinceEndOfLastFrame = currentFrame.m_startTime - lastTime;
-            }
-        }
-        {
-            std::vector<Frame> &items = traceEntry.m_submissionJobStatsModel->items();
-            for (int i = 1, m = items.size(); i < m; ++i) {
-                const Frame previousFrame = items.at(i - 1);
-                quint64 lastTime = previousFrame.m_startTime + previousFrame.m_totalDuration;
-                Frame &currentFrame = items[i];
-                currentFrame.m_timeSinceEndOfLastFrame = currentFrame.m_startTime - lastTime;
-            }
-        }
+        traceEntry.m_jobModel->insertRows(std::move(frameJobs));
 
         qDebug() << Q_FUNC_INFO << "Done";
     } else {

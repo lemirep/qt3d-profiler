@@ -32,6 +32,7 @@
 #include <QQmlApplicationEngine>
 #include "profiler.h"
 #include "debuggerconnection.h"
+#include "jobtraceview.h"
 
 QObject *singletonProvider(QQmlEngine *, QJSEngine *)
 {
@@ -42,6 +43,7 @@ int main(int ac, char **av)
 {
     QGuiApplication app(ac, av);
     QQmlApplicationEngine engine;
+    qmlRegisterType<JobTraceView>("Profiler", 1, 0, "JobTraceView");
     qmlRegisterSingletonType<Profiler>("Profiler", 1, 0, "Singleton", &singletonProvider);
     qmlRegisterUncreatableType<DebuggerConnection>("Profiler", 1, 0, "DebuggerConnection", QLatin1String("Uncreatable type"));
 

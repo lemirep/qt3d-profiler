@@ -33,21 +33,23 @@ import Profiler 1.0
 
 Rectangle {
     id: root
-    property int start // ns
-    property int end // ns
+    property real xPos;
+    property real start // ns
+    property real end // ns
     property int type
     property int instance
-    property int relativeStart // ns
-    property int relativeEnd // ns
+    property real relativeStart // ns
+    property real relativeEnd // ns
     readonly property real duration: (relativeEnd - relativeStart) * nsecToMSec // ms
-    property bool collapsed: false
     property string name
+    property int threadId
 
-    height: frameView.barHeight * 0.5 - 1
-    y: model.index % 2 ? frameView.barHeight * 0.5 : 1
     readonly property int maxWidth: Math.max(Singleton.msecToPixelScale * duration, 2)
-    width: collapsed ? Math.min(maxWidth, 200) : maxWidth
-    x: relativeStart * nsecToMSec * Singleton.msecToPixelScale // ms
+
+    height: frameView.barHeight
+    y: root.threadId * (frameView.barHeight + 5)
+    width: maxWidth
+    x: xPos * Singleton.msecToPixelScale
 
     gradient: Gradient {
         GradientStop { color: Qt.lighter(root.color, ma.containsMouse ? 1.25 : 1); position: 0.0}
@@ -69,9 +71,6 @@ Rectangle {
         id: ma
         anchors.fill: parent
         hoverEnabled: true
-        onClicked: {
-            collapsed = !collapsed
-        }
         onEntered: {
             var pos = pageListView.mapFromItem(ma, ma.mouseX, ma.mouseY)
             frameView.jobHighLight.x = pos.x + 15

@@ -33,6 +33,8 @@
 QVariant Job::data(int role) const
 {
     switch (role) {
+    case JobModel::X:
+        return m_x;
     case JobModel::InstanceId:
         return m_jobStats.jobId.typeAndInstance[1];
     case JobModel::Type:
@@ -55,46 +57,8 @@ QVariant Job::data(int role) const
         return m_relativeEnd;
     case JobModel::RelativeStart:
         return m_relativeStart;
-    default:
-        return QVariant();
-    }
-}
-
-QVariant Thread::data(int role) const
-{
-    switch (role) {
-    case ThreadModel::Id:
+    case JobModel::ThreadId:
         return m_threadId;
-    case ThreadModel::JobCount:
-        return m_jobModel->rowCount();
-    case ThreadModel::JobModel:
-        return QVariant::fromValue(m_jobModel.data());
-    default:
-        return QVariant();
-    }
-}
-
-QVariant Frame::data(int role) const
-{
-    switch (role) {
-    case FrameModel::Id:
-        return m_header.frameId;
-    case FrameModel::ThreadCount:
-        return m_threadModel->rowCount();
-    case FrameModel::ThreadsModel:
-        return QVariant::fromValue(m_threadModel.data());
-    case FrameModel::TotalDuration:
-        return m_totalDuration;
-    case FrameModel::StartTime:
-        return m_startTime;
-    case FrameModel::StartTimeMS:
-        return m_startTime / 1000000;
-    case FrameModel::TotalDurationMS:
-        return m_totalDuration / 1000000;
-    case FrameModel::FrameType:
-        return m_frameType;
-    case FrameModel::TimeSinceLastFrameMS:
-        return m_timeSinceEndOfLastFrame / 1000000;
     default:
         return QVariant();
     }
@@ -103,16 +67,14 @@ QVariant Frame::data(int role) const
 QVariant JobTraces::data(int role) const
 {
     switch (role) {
-    case JobTracesModel::WorkerJobFramesModel:
-        return QVariant::fromValue(m_workJobStatsModel.get());
-    case JobTracesModel::SubmissionJobFramesModel:
-        return QVariant::fromValue(m_submissionJobStatsModel.get());
     case JobTracesModel::ThreadCount:
         return m_threadCount;
     case JobTracesModel::TotalDuration:
         return m_totalDuration;
     case JobTracesModel::Title:
         return m_title;
+    case JobTracesModel::JobsModel:
+        return QVariant::fromValue(m_jobModel.get());
     default:
         return QVariant();
     }

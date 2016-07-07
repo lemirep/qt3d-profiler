@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = qt3dprofiler
 
-QT += quick
+QT += quick concurrent
 
 SOURCES += main.cpp \
     jobstatsreader.cpp \
@@ -9,7 +9,8 @@ SOURCES += main.cpp \
     commandresultreceiver.cpp \
     datamodels.cpp \
     rendercommandparser.cpp \
-    profiler.cpp
+    profiler.cpp \
+    jobtraceview.cpp
 
 HEADERS += \
     listmodel.h \
@@ -18,7 +19,8 @@ HEADERS += \
     commandresultreceiver.h \
     datamodels.h \
     rendercommandparser.h \
-    profiler.h
+    profiler.h \
+    jobtraceview.h
 
 RESOURCES += \
     qml.qrc

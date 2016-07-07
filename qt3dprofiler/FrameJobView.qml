@@ -30,6 +30,7 @@
 
 import QtQuick 2.7
 import QtQuick.Controls 2.0
+import QtQuick.Controls.Styles 1.4
 import Profiler 1.0
 
 Item {
@@ -37,13 +38,12 @@ Item {
     implicitWidth: mainRoot.width
     height: childrenRect.height
 
-    readonly property int barHeight: 50
+    readonly property int barHeight: 35
     readonly property real nsecToMSec: 0.000001
 
     property int threadCount
     property real frameTotalDuration
-    property alias workerJobStatsModel: workerJobListView.model
-    property alias submissionJobStatsModel: submissionJobListView.model
+    property alias jobsModel: jobTraceView.sourceModel
     property alias frameTitle: titleText.text
 
     Item {
@@ -181,118 +181,151 @@ Item {
         z: 5
     }
 
-    Column {
+    // Show time bar
+    Item {
+        id: timeBar
         anchors {
             left: backgroundBandColumn.left
             right: backgroundBandColumn.right
             top: sideBar.top
         }
+        height: frameView.barHeight
+        readonly property real startTime: (jobsFlickable.contentX / Singleton.msecToPixelScale).toFixed(1)
+        readonly property real endTime: ((jobsFlickable.contentX + parent.width) / Singleton.msecToPixelScale).toFixed(1)
 
-
-        Item {
-            anchors {
-                left: parent.left
-                right: parent.right
+        Rectangle {
+            id: timeBackground
+            color: "white"
+            anchors.fill: parent
+            gradient: Gradient {
+                GradientStop { color: Qt.lighter(timeBackground.color, 1); position: 0.0}
+                GradientStop { color: Qt.darker(timeBackground.color, 1.25); position: 1.0}
             }
-            height: sideBar.height
-            clip: true
-            ListView {
-                id: submissionJobListView
-                anchors.fill: parent
-                orientation: ListView.Horizontal
-                preferredHighlightBegin: 0
-                preferredHighlightEnd: width
-                highlightRangeMode: ListView.ApplyRange
-                highlightMoveDuration: -1
-                highlightMoveVelocity: -1
-                spacing: 10
-                delegate:  SubmissionFrame {
-                    threadsModel: model.ThreadsModel
-                    threadCount: model.ThreadCount
-                    frameId: model.Id
-                    totalDuration: model.TotalDurationMS
-                    startTime: model.StartTimeMS
-                    timeSinceLastFrame: model.TimeSinceLastFrameMS
+
+            Repeater {
+                id: timeGraduationsRepeater
+                model: Math.floor(timeBar.endTime - timeBar.startTime) * 2.0
+                readonly property real offset: (Math.floor(timeBar.startTime) - timeBar.startTime) * Singleton.msecToPixelScale
+                readonly property real spacing: (timeBackground.width / timeGraduationsRepeater.model)
+                Rectangle {
+                    color: "black"
+                    x: timeGraduationsRepeater.offset + model.index * timeGraduationsRepeater.spacing
+                    height: model.index % 2 === 0 ? timeBackground.height * 0.4 : timeBackground.height * 0.2
+                    anchors.bottom: parent.bottom
+                    width: model.index % 2 === 0 ? 2 : 1
                 }
-                contentX: workerJobListView.contentX
-                currentIndex: workerJobListView.currentIndex
             }
-            ListView {
-                id: workerJobListView
-                anchors.fill: parent
-                orientation: ListView.Horizontal
-                preferredHighlightBegin: 0
-                preferredHighlightEnd: width
-                highlightRangeMode: ListView.ApplyRange
-                highlightMoveDuration: -1
-                highlightMoveVelocity: -1
-                spacing: 10
-                delegate:  JobFrame {
-                    threadsModel: model.ThreadsModel
-                    threadCount: model.ThreadCount
-                    frameId: model.Id
-                    totalDuration: model.TotalDurationMS
-                    startTime: model.StartTimeMS
-                    timeSinceLastFrame: model.TimeSinceLastFrameMS
+
+            // Duration bars (overdrawn outside of this element
+            Repeater {
+                id: durationBarRepeater
+                model: timeGraduationsRepeater.model * 0.5
+                Rectangle {
+                    width: 1
+                    height: jobsFlickable.height
+                    color: "#338b8b8b"
+                    x: timeGraduationsRepeater.offset + model.index * timeGraduationsRepeater.spacing * 2.0
                 }
             }
         }
 
-        ListView {
-            z: -1
-            height: 35
+        Text {
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.leftMargin: 20
+            text: timeBar.startTime + " ms"
+            color: "white"
+            font.bold: true
+            font.pointSize: 16
+            font.italic: true
+            font.family: robotoFont.name
+            style: Text.Outline
+            styleColor: "black"
+        }
+        Text {
+            anchors.horizontalCenter: parent.horizontalCenter
+            anchors.top: parent.top
+            text: ((timeBar.startTime + timeBar.endTime) * 0.5).toFixed(1) + " ms"
+            color: "white"
+            font.bold: true
+            font.pointSize: 16
+            font.italic: true
+            font.family: robotoFont.name
+            style: Text.Outline
+            styleColor: "black"
+        }
+        Text {
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.rightMargin: 20
+            text: timeBar.endTime + " ms"
+            color: "white"
+            font.bold: true
+            font.pointSize: 16
+            font.italic: true
+            font.family: robotoFont.name
+            style: Text.Outline
+            styleColor: "black"
+        }
+    }
+
+    Flickable {
+        id: jobsFlickable
+        anchors {
+            left: backgroundBandColumn.left
+            right: backgroundBandColumn.right
+            top: sideBar.top
+        }
+        height: sideBar.height + 10 // Offset for scrollbar
+        contentWidth: jobTraceView.width
+        contentHeight: height
+        clip: true
+
+        ScrollBar.horizontal: ScrollBar {
+            id: control
+            orientation: Qt.Horizontal
+            contentItem: Rectangle {
+                implicitHeight: 6
+                implicitWidth: 100
+                radius: height / 2
+                color: control.pressed ? "#81e889" : "#c2f4c6"
+            }
+            background: Rectangle {
+                color: "#333333"
+            }
+        }
+
+        // Show the jobs
+        JobTraceView {
+            id: jobTraceView
             anchors {
-                left: parent.left
-                right: parent.right
-            }
-            clip: true
-            model: workerJobListView.model.rowCount()
-            orientation: ListView.Horizontal
-            currentIndex: workerJobListView.currentIndex
-            delegate: Rectangle {
-                id: smallDel
-                height: 35
-                width: 50
-                gradient: Gradient {
-                    GradientStop { color: Qt.lighter(smallDel.color, 1); position: 0.0}
-                    GradientStop { color: Qt.darker(smallDel.color, 1.25); position: 1.0}
-                }
-
-                Text {
-                    anchors.centerIn: parent
-                    text: model.index
-                    color: parent.ListView.isCurrentItem ? "red" : "black"
-                    font.family: robotoFont.name
-                }
-                Rectangle {
-                    anchors {
-                        top: parent.top
-                        left: parent.left
-                    }
-                    height: parent.height * 0.5
-                    width: 1
-                    color: "black"
-                }
-                Rectangle {
-                    anchors {
-                        top: parent.top
-                        horizontalCenter: parent.horizontalCenter
-                    }
-                    height: parent.height * 0.25
-                    width: 1
-                    color: parent.ListView.isCurrentItem ? "red" : "black"
-                }
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: workerJobListView.currentIndex = model.index
-                }
+                top: parent.top
+                bottom: parent.bottom
             }
 
-            highlightRangeMode: ListView.ApplyRange
-            preferredHighlightBegin: 0
-            preferredHighlightEnd: width
-            highlightMoveDuration: -1
-            highlightMoveVelocity: -1
+            msecToPixelScale: Singleton.msecToPixelScale
+            frameTotalDuration: frameView.frameTotalDuration
+            viewWidth: col.width
+            viewContentX: jobsFlickable.contentX
+
+            Repeater {
+                id: workerJobListView
+                model: jobTraceView.visibleJobsModel
+                anchors.fill: parent
+
+                delegate: Job {
+                    xPos: model.X
+                    start: model.FrameStart
+                    end: model.FrameEnd
+                    type: model.Type
+                    instance: model.InstanceId
+                    color: model.Color
+                    name: model.Name
+                    relativeStart: model.RelativeStart
+                    relativeEnd: model.RelativeEnd
+                    threadId: model.ThreadId
+                }
+            }
         }
     }
 }
