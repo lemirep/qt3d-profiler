@@ -78,7 +78,7 @@ Window {
     ListView {
         id: pageListView
         model: VisualItemModel {
-            JobTraceViews { height: ListView.view.height; width: ListView.view.width }
+            JobTraceViews { id: jobTraceViews; height: ListView.view.height; width: ListView.view.width }
             RenderViewInspector { height: ListView.view.height; width: ListView.view.width }
             Rectangle { color: "blue"; height: ListView.view.height; width: ListView.view.width }
         }
@@ -118,5 +118,8 @@ Window {
         }
         onClicked: pageListView.currentIndex = idx
         currentIndex: pageListView.currentIndex
+
+        opacity: pageListView.currentIndex === 0 ? (jobTraceViews.contentY > 20 ? 0 : 1.0) : 1.0
+        Behavior on opacity { OpacityAnimator { duration: 500; easing.type: Easing.InOutQuad } }
     }
 }

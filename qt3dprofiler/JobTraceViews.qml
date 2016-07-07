@@ -35,107 +35,104 @@ import QtQuick.Controls 2.0
 import QtQuick.Controls.Styles 1.4
 import Profiler 1.0
 
-Item {
-    Flickable {
-        anchors.fill: parent
-        contentWidth: col.width
-        contentHeight: col.height
+Flickable {
+    contentWidth: col.width
+    contentHeight: col.height
 
-        ScrollBar.vertical: ScrollBar {
-            id: control
-            orientation: Qt.Vertical
-            contentItem: Rectangle {
-                implicitWidth: 6
-                implicitHeight: 100
-                radius: width / 2
-                color: control.pressed ? "#81e889" : "#c2f4c6"
+    ScrollBar.vertical: ScrollBar {
+        id: control
+        orientation: Qt.Vertical
+        contentItem: Rectangle {
+            implicitWidth: 6
+            implicitHeight: 100
+            radius: width / 2
+            color: control.pressed ? "#81e889" : "#c2f4c6"
+        }
+        background: Rectangle {
+            color: "#333333"
+        }
+    }
+
+    Column {
+        id: col
+        spacing: 20
+        width: mainRoot.width
+
+        Column {
+            // TO DO: Allow to load multiple traces to perform comparison
+            id: frameJobViews
+            width: mainRoot.width
+            spacing: 25
+
+            add: Transition {
+                NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
+                NumberAnimation { property: "scale"; from: 0; to: 1.0; duration: 400 }
             }
-            background: Rectangle {
-                color: "#333333"
+
+            move: Transition {
+                NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
+                NumberAnimation { property: "scale"; from: 0; to: 1.0; duration: 400 }
+            }
+
+            Repeater {
+                id: jobTracesRepeater
+                model: Singleton.jobTracesModel
+                FrameJobView {
+                    threadCount: model.ThreadCount
+                    jobsModel: model.JobsModel
+                    frameTotalDuration: model.TotalDuration
+                    frameTitle: model.Title
+                }
             }
         }
 
-        Column {
-            id: col
-            spacing: 20
-            width: mainRoot.width
-
-            Column {
-                // TO DO: Allow to load multiple traces to perform comparison
-                id: frameJobViews
-                width: mainRoot.width
-                spacing: 25
-
-                add: Transition {
-                    NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
-                    NumberAnimation { property: "scale"; from: 0; to: 1.0; duration: 400 }
-                }
-
-                move: Transition {
-                    NumberAnimation { property: "opacity"; from: 0; to: 1.0; duration: 400 }
-                    NumberAnimation { property: "scale"; from: 0; to: 1.0; duration: 400 }
-                }
-
-                Repeater {
-                    id: jobTracesRepeater
-                    model: Singleton.jobTracesModel
-                    FrameJobView {
-                        threadCount: model.ThreadCount
-                        jobsModel: model.JobsModel
-                        frameTotalDuration: model.TotalDuration
-                        frameTitle: model.Title
-                    }
-                }
+        Item {
+            height: addTraceButton.height
+            anchors {
+                left: parent.left
+                right: parent.right
+                leftMargin: 25
+                rightMargin: 25
             }
-
             Item {
-                height: addTraceButton.height
-                anchors {
-                    left: parent.left
-                    right: parent.right
-                    leftMargin: 25
-                    rightMargin: 25
-                }
-                Item {
-                    width: frameJobViews.width
-                    height: childrenRect.height + 15
-                    anchors.left: parent.left
-                    anchors.verticalCenter: parent.verticalCenter
-                    visible: jobTracesRepeater.count > 0
-                    Column {
+                width: frameJobViews.width
+                height: childrenRect.height + 15
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                visible: jobTracesRepeater.count > 0
+                Column {
 
-                        Text {
-                            text: "1 ms === " + zoomSlider.value + "px"
-                            color: "white"
-                            anchors.horizontalCenter: zoomSlider.horizontalCenter
-                        }
-                        Slider {
-                            id: zoomSlider
-                            from: 50
-                            to: 500
-                            width: 400
-                            value: Singleton.msecToPixelScale
-                            onValueChanged: Singleton.msecToPixelScale = value
-                        }
+                    Text {
+                        text: "1 ms === " + zoomSlider.value + "px"
+                        color: "white"
+                        anchors.horizontalCenter: zoomSlider.horizontalCenter
+                    }
+                    Slider {
+                        id: zoomSlider
+                        from: 50
+                        to: 500
+                        width: 400
+                        value: Singleton.msecToPixelScale
+                        onValueChanged: Singleton.msecToPixelScale = value
                     }
                 }
-
-                AddButton {
-                    id: addTraceButton
-                    onClicked: fileDialog.visible = true
-                    anchors.right: parent.right
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
             }
 
-            JobLegend {
-                spacing: 10
-                anchors {
-                    horizontalCenter: parent.horizontalCenter
-                }
-                height: 400
+            AddButton {
+                id: addTraceButton
+                onClicked: fileDialog.visible = true
+                anchors.right: parent.right
+                anchors.verticalCenter: parent.verticalCenter
             }
+
+        }
+
+        JobLegend {
+            spacing: 10
+            anchors {
+                horizontalCenter: parent.horizontalCenter
+            }
+            height: 400
         }
     }
 }
