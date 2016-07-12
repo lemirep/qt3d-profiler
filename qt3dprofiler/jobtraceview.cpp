@@ -176,9 +176,12 @@ JobProxyModel::JobProxyModel()
 
 QModelIndex JobProxyModel::index(int row, int , const QModelIndex &) const
 {
-    if (row < proxyToSourceModelIndex.size())
-        return proxyToSourceModelIndex.at(row);
-    qDebug() << "Bad" << row << proxyToSourceModelIndex.size();
+    for (int i = 0, m = m_activeSlices.size(); i < m; ++i) {
+        const ModelSlice &slice = m_activeSlices.at(i);
+        if (row < slice.m_sourceIndices.size())
+            return slice.m_sourceIndices.at(row);
+        row -= slice.m_sourceIndices.size();
+    }
     return QModelIndex();
 }
 
@@ -189,7 +192,10 @@ QModelIndex JobProxyModel::parent(const QModelIndex &) const
 
 int JobProxyModel::rowCount(const QModelIndex &) const
 {
-    return proxyToSourceModelIndex.size();
+    int count = 0;
+    for (const ModelSlice &s : m_activeSlices)
+        count += s.m_sourceIndices.size();
+    return count;
 }
 
 int JobProxyModel::columnCount(const QModelIndex &parent) const
@@ -204,8 +210,13 @@ QModelIndex JobProxyModel::mapToSource(const QModelIndex &proxyIndex) const
         return QModelIndex();
 
     int idx = proxyIndex.row();
-    if (idx < proxyToSourceModelIndex.size())
-        return proxyToSourceModelIndex.at(idx);
+
+    for (int i = 0, m = m_activeSlices.size(); i < m; ++i) {
+        const ModelSlice &slice = m_activeSlices.at(i);
+        if (idx < slice.m_sourceIndices.size())
+            return slice.m_sourceIndices.at(idx);
+        idx -= slice.m_sourceIndices.size();
+    }
     return QModelIndex();
 }
 
@@ -215,7 +226,13 @@ QModelIndex JobProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
     if (!sourceIndex.isValid())
         return QModelIndex();
 
-    int idx = proxyToSourceModelIndex.indexOf(sourceIndex);
+    int idx = -1;
+    for (int i = 0, m = m_activeSlices.size(); i < m; ++i) {
+        const ModelSlice &slice = m_activeSlices.at(i);
+        idx = slice.m_sourceIndices.indexOf(sourceIndex);
+        if (idx != -1)
+            break;
+    }
     if (idx != -1)
         return createIndex(idx, 0);
     return QModelIndex();
@@ -223,14 +240,13 @@ QModelIndex JobProxyModel::mapFromSource(const QModelIndex &sourceIndex) const
 
 void JobProxyModel::clear()
 {
-    proxyToSourceModelIndex.clear();
+    m_activeSlices.clear();
 }
 
 void JobProxyModel::addSlice(const ModelSlice &slice)
 {
     m_activeSlices.push_back(slice);
     layoutAboutToBeChanged();
-    proxyToSourceModelIndex += slice.m_sourceIndices;
     layoutChanged();
 }
 
@@ -240,11 +256,7 @@ void JobProxyModel::removeSlice(int sliceIndex)
     const ModelSlice &slice = m_activeSlices.takeAt(sliceIndex);
     const int indicesCount = slice.m_sourceIndices.size();
     if (indicesCount > 0) {
-        auto startIdx = proxyToSourceModelIndex.indexOf(slice.m_sourceIndices.first());
-        if (startIdx >= 0) {
-            layoutAboutToBeChanged();
-            proxyToSourceModelIndex.erase(proxyToSourceModelIndex.begin() + startIdx, proxyToSourceModelIndex.begin() + startIdx + indicesCount);
-            layoutChanged();
-        }
+        layoutAboutToBeChanged();
+        layoutChanged();
     }
 }

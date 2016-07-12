@@ -41,13 +41,12 @@ public:
     void addSlice(const ModelSlice &slice);
     void removeSlice(int slideIndex);
 
-    const QVector<ModelSlice> &activeSlices() { return m_activeSlices; }
+    QVector<ModelSlice> activeSlices() const { return m_activeSlices; }
 
 protected:
     friend class JobTraceView; // to call createIndex
 
 private:
-    QVector<QPersistentModelIndex> proxyToSourceModelIndex;
     QVector<ModelSlice> m_activeSlices;
 };
 
