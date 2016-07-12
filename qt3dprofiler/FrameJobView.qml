@@ -43,6 +43,7 @@ Item {
 
     property int threadCount
     property real frameTotalDuration
+    property real frameStartTime
     property alias jobsModel: jobTraceView.sourceModel
     property alias frameTitle: titleText.text
 
@@ -190,8 +191,8 @@ Item {
             top: sideBar.top
         }
         height: frameView.barHeight
-        readonly property real startTime: (jobsFlickable.contentX / Singleton.msecToPixelScale).toFixed(1)
-        readonly property real endTime: ((jobsFlickable.contentX + parent.width) / Singleton.msecToPixelScale).toFixed(1)
+        readonly property real startTime: ((jobsFlickable.contentX / Singleton.msecToPixelScale) + frameStartTime * nsecToMSec).toFixed(1)
+        readonly property real endTime: (((jobsFlickable.contentX + parent.width) / Singleton.msecToPixelScale) + frameStartTime * nsecToMSec).toFixed(1)
 
         Rectangle {
             id: timeBackground
@@ -303,6 +304,7 @@ Item {
                 bottom: parent.bottom
             }
 
+            frameStartTime: frameView.frameStartTime
             msecToPixelScale: Singleton.msecToPixelScale
             frameTotalDuration: frameView.frameTotalDuration
             viewWidth: col.width

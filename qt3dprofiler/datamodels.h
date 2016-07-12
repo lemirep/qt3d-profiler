@@ -104,6 +104,7 @@ public:
     std::unique_ptr<JobModel> m_jobModel;
     int m_threadCount = 0;
     quint64 m_totalDuration = 0;
+    quint64 m_startTime = 0;
     QString m_title;
 };
 Q_DECLARE_TYPEINFO(JobTraces, Q_MOVABLE_TYPE);
@@ -138,6 +139,7 @@ public:
         JobsModel,
         ThreadCount,
         TotalDuration,
+        StartTime,
         Title
     };
     Q_ENUM(Roles)

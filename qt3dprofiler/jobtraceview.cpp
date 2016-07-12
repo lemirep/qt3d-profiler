@@ -9,7 +9,7 @@ JobTraceView::JobTraceView(QQuickItem *parent)
     , m_viewWidth(0.0)
     , m_frameTotalDuration(0.0)
     , m_previousViewContentX(0.0)
-    , m_startingDuration(0.0)
+    , m_frameStartTime(0.0)
     , m_rebuild(false)
     , m_sourceModel(nullptr)
     , m_visibleJobsModel(new JobProxyModel())
@@ -78,6 +78,16 @@ void JobTraceView::setFrameTotalDuration(qreal totalDuration)
     }
 }
 
+void JobTraceView::setFrameStartTime(qreal startTime)
+{
+    if (m_frameStartTime != startTime) {
+        m_frameStartTime = startTime;
+        emit frameStartTimeChanged();
+        m_rebuild = true;
+        updateVisibleModel();
+    }
+}
+
 // Takes care of removing jobs that aren't visible in the current section
 void JobTraceView::updateVisibleModel()
 {
@@ -92,14 +102,10 @@ void JobTraceView::updateVisibleModel()
         m_slices.reserve(maxWidth / m_viewWidth);
         m_visibleJobsModel->clear();
 
-        qreal maxStartTime = std::numeric_limits<qreal>::max();
         std::vector<Job> &jobs = m_sourceModel->items();
-        for (const Job &job : jobs)
-            if (job.m_frameStart < maxStartTime)
-                maxStartTime = job.m_frameStart;
+        const qreal startOffset = m_frameStartTime * 0.000001;
         for (Job &job : jobs)
-            job.m_x -= maxStartTime * 0.000001;
-        m_startingDuration = maxStartTime;
+            job.m_x -= startOffset;
 
         auto buildSlice = [this] (ModelSlice &slice) {
             const qint64 start = slice.startRange;
@@ -122,8 +128,8 @@ void JobTraceView::updateVisibleModel()
         qreal contentX = 0.0;
         while (contentX <= maxWidth) {
             // in ns
-            const qint64 startRangeDuration = contentX / (m_msecToPixelScale * 0.000001) + m_startingDuration;
-            const qint64 endRangeDuration = (contentX + m_viewWidth) / (m_msecToPixelScale * 0.000001) + m_startingDuration;
+            const qint64 startRangeDuration = contentX / (m_msecToPixelScale * 0.000001) + m_frameStartTime;
+            const qint64 endRangeDuration = (contentX + m_viewWidth) / (m_msecToPixelScale * 0.000001) + m_frameStartTime;
 
             ModelSlice slice;
             slice.startRange = startRangeDuration;
@@ -141,29 +147,26 @@ void JobTraceView::updateVisibleModel()
     // Find jobs than range from (contentX - viewWidth * 0.5 to contentX + 1.5 * viewWidth)
 
     // in ns
-    const qint64 startRangeDuration = std::max(m_viewContentX - m_viewWidth * 1.5, 0.0) / (m_msecToPixelScale * 0.000001) + m_startingDuration;
-    const qint64 endRangeDuration = (m_viewContentX + m_viewWidth * 2.5) / (m_msecToPixelScale * 0.000001) + m_startingDuration;
+    const qint64 startRangeDuration = std::max(m_viewContentX - m_viewWidth * 1.5, 0.0) / (m_msecToPixelScale * 0.000001) + m_frameStartTime;
+    const qint64 endRangeDuration = (m_viewContentX + m_viewWidth * 2.5) / (m_msecToPixelScale * 0.000001) + m_frameStartTime;
 
-    const QVector<ModelSlice> &modelActiveSlices = m_visibleJobsModel->activeSlices();
-    bool containsValidSlice = false;
+    QVector<ModelSlice> modelActiveSlices = m_visibleJobsModel->activeSlices();
     // Remove slices that aren't visible
     for (int i = modelActiveSlices.size() - 1; i >= 0; --i) {
         const ModelSlice &slice = modelActiveSlices.at(i);
         if (slice.endRange < startRangeDuration ||
-                slice.startRange > endRangeDuration)
+                slice.startRange > endRangeDuration) {
             m_visibleJobsModel->removeSlice(i);
-        else
-            containsValidSlice = true;
+            modelActiveSlices.removeAt(i);
+        }
     }
 
     // Add missing slices
-    if (!containsValidSlice) {
-        for (auto i = 0, c = m_slices.size(); i < c; ++i) {
-            const ModelSlice &slice = m_slices.at(i);
-            if (!(slice.endRange < startRangeDuration ||
-                  slice.startRange > endRangeDuration))
-                m_visibleJobsModel->addSlice(slice);
-        }
+    for (auto i = 0, c = m_slices.size(); i < c; ++i) {
+        const ModelSlice &slice = m_slices.at(i);
+        if (!(slice.endRange < startRangeDuration ||
+              slice.startRange > endRangeDuration) && !modelActiveSlices.contains(slice))
+            m_visibleJobsModel->addSlice(slice);
     }
 }
 

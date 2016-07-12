@@ -14,6 +14,11 @@ struct ModelSlice
     qint64 startRange;
     qint64 endRange;
     QVector<QPersistentModelIndex> m_sourceIndices;
+
+    bool operator == (const ModelSlice &other) const {
+        // Assumes that if ranges are identical, then indices are automatically
+        return startRange == other.startRange && endRange == other.endRange;
+    }
 };
 
 class JobProxyModel : public QAbstractProxyModel
@@ -53,6 +58,7 @@ class JobTraceView : public QQuickItem
     Q_PROPERTY(qreal viewContentX READ viewContentX WRITE setViewContentX NOTIFY viewContentXChanged)
     Q_PROPERTY(qreal viewWidth READ viewWidth WRITE setViewWidth NOTIFY viewWidthChanged)
     Q_PROPERTY(qreal frameTotalDuration READ frameTotalDuration WRITE setFrameTotalDuration NOTIFY frameTotalDurationChanged)
+    Q_PROPERTY(qreal frameStartTime READ frameStartTime WRITE setFrameStartTime NOTIFY frameStartTimeChanged)
     Q_PROPERTY(QAbstractItemModel *visibleJobsModel READ visibleJobsModel CONSTANT)
     Q_PROPERTY(QAbstractListModel *sourceModel READ sourceModel WRITE setSourceModel NOTIFY sourceModelChanged)
 
@@ -78,12 +84,16 @@ public:
     void setFrameTotalDuration(qreal totalDuration);
     qreal frameTotalDuration() const { return m_frameTotalDuration; }
 
+    void setFrameStartTime(qreal startTime);
+    qreal frameStartTime() const { return m_frameStartTime; }
+
 Q_SIGNALS:
     void msecToPixelScaleChanged();
     void viewContentXChanged();
     void viewWidthChanged();
     void sourceModelChanged();
     void frameTotalDurationChanged();
+    void frameStartTimeChanged();
 
 private:
     void updateVisibleModel();
@@ -93,7 +103,7 @@ private:
     qreal m_viewWidth;
     qreal m_frameTotalDuration;
     qreal m_previousViewContentX;
-    qreal m_startingDuration;
+    qreal m_frameStartTime;
     bool m_rebuild;
 
     JobModel *m_sourceModel;

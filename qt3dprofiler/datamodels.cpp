@@ -71,6 +71,8 @@ QVariant JobTraces::data(int role) const
         return m_threadCount;
     case JobTracesModel::TotalDuration:
         return m_totalDuration;
+    case JobTracesModel::StartTime:
+        return m_startTime;
     case JobTracesModel::Title:
         return m_title;
     case JobTracesModel::JobsModel:

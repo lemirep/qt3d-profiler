@@ -82,6 +82,7 @@ Flickable {
                     jobsModel: model.JobsModel
                     frameTotalDuration: model.TotalDuration
                     frameTitle: model.Title
+                    frameStartTime: model.StartTime
                 }
             }
         }

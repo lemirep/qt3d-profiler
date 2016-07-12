@@ -127,8 +127,15 @@ JobTraces JobStatsReader::readTraceFile(const QUrl &fileUrl)
 
            frameJobs.insert(frameJobs.end(), jobs.begin(), jobs.end());
         } // Repeat
+
+        qreal maxStartTime = std::numeric_limits<qreal>::max();
+        for (const Job &job : frameJobs)
+            if (job.m_frameStart < maxStartTime)
+                maxStartTime = job.m_frameStart;
+
         traceEntry.m_threadCount = threadIds.size();
         traceEntry.m_jobModel->insertRows(std::move(frameJobs));
+        traceEntry.m_startTime = maxStartTime;
 
         qDebug() << Q_FUNC_INFO << "Done";
     } else {
