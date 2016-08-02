@@ -6,7 +6,7 @@
             "jobs": [
                 { "type": 1, "name": "LoadBuffer", "color": "#1abc9c" },
                 { "type": 2, "name": "FrameCleanup", "color": "#2ecc71" },
-                { "type": 3, "name": "FramePreparation", "color": "#3498db" },
+                { "type": 3, "name": "UpdateShaderDataTransform", "color": "#3498db" },
                 { "type": 4, "name": "CalcBoundingVolume", "color": "#9b59b6" },
                 { "type": 5, "name": "CalcTriangleVolume", "color": "#34495e" },
                 { "type": 6, "name": "LoadGeometry", "color": "#f1c40f" },
@@ -28,7 +28,13 @@
                 { "type": 22, "name": "FrameSubmissionPart2", "color": "#2980b9" },
                 { "type": 23, "name": "DirtyBufferGathering", "color": "#C0BA78" },
                 { "type": 24, "name": "DirtyTextureGathering", "color": "#5659C9" },
-                { "type": 25, "name": "DirtyShaderGathering", "color": "#FABFA1" }
+                { "type": 25, "name": "DirtyShaderGathering", "color": "#FABFA1" },
+                { "type": 26, "name": "SyncRenderViewCommandBuilding", "color": "#E94E77" },
+                { "type": 27, "name": "SyncRenderViewInitialization", "color": "#F1BBBA" },
+                { "type": 28, "name": "SyncRenderViewCommandBuilder", "color": "#D8EEE6" },
+                { "type": 29, "name": "SyncFrustumCulling", "color": "#9FF3C7" },
+                { "type": 30, "name": "ClearBufferDrawIndex", "color": "#C9C7C7" },
+                { "type": 31, "name": "UpdateMeshTriangleList", "color": "#C3C9C2" }
             ],
             "commands": [
                 { "name": "glinfo", "returnType": "text" },
