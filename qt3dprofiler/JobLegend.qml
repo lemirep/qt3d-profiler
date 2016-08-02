@@ -65,7 +65,7 @@ Flow {
             Grid {
                 id: g
                 spacing: 20
-                rows: 3
+                rows: 5
 
                 Repeater {
                     model: typeInfoModel
