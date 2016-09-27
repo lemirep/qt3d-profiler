@@ -29,12 +29,14 @@
                 { "type": 23, "name": "DirtyBufferGathering", "color": "#C0BA78" },
                 { "type": 24, "name": "DirtyTextureGathering", "color": "#5659C9" },
                 { "type": 25, "name": "DirtyShaderGathering", "color": "#FABFA1" },
-                { "type": 26, "name": "SyncRenderViewCommandBuilding", "color": "#E94E77" },
-                { "type": 27, "name": "SyncRenderViewInitialization", "color": "#F1BBBA" },
-                { "type": 28, "name": "SyncRenderViewCommandBuilder", "color": "#D8EEE6" },
-                { "type": 29, "name": "SyncFrustumCulling", "color": "#9FF3C7" },
-                { "type": 30, "name": "ClearBufferDrawIndex", "color": "#C9C7C7" },
-                { "type": 31, "name": "UpdateMeshTriangleList", "color": "#C3C9C2" }
+                { "type": 26, "name": "SendRenderCapture", "color": "#FABEAE" },
+                { "type": 27, "name": "SyncRenderViewCommandBuilding", "color": "#E94E77" },
+                { "type": 28, "name": "SyncRenderViewInitialization", "color": "#F1BBBA" },
+                { "type": 29, "name": "SyncRenderViewCommandBuilder", "color": "#D8EEE6" },
+                { "type": 30, "name": "SyncFrustumCulling", "color": "#9FF3C7" },
+                { "type": 31, "name": "ClearBufferDrawIndex", "color": "#C9C7C7" },
+                { "type": 32, "name": "UpdateMeshTriangleList", "color": "#C3C9C2" },
+                { "type": 33, "name": "FilterCompatibleTechniques", "color": "#C3D9A2" }
             ],
             "commands": [
                 { "name": "glinfo", "returnType": "text" },
@@ -55,6 +57,13 @@
             "jobs": [
                 { "type": 2048, "name": "Callback", "color": "#019875" }
             ]
+        },
+        {
+            "name": "core",
+            "jobs": [
+                { "type": 4096, "name": "ArbiterSync", "color": "#CFED21" }
+            ]
         }
+
     ]
 }
