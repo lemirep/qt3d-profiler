@@ -28,7 +28,7 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.5
+import QtQuick 2.7
 import QtQuick.Dialogs 1.0
 import QtQuick.Window 2.0
 import QtQuick.Controls 1.4
@@ -37,7 +37,7 @@ import Profiler 1.0
 
 
 Flow {
-    spacing: 25
+    spacing: 250
     width: childrenRect.width
     height: childrenRect.height
 
@@ -47,7 +47,7 @@ Flow {
         Column {
             readonly property QtObject typeInfoModel: model.JobTypeInfoModel
             id: innerColumn
-            width: childrenRect.width
+            width: childrenRect.width + 10
             height: childrenRect.height
             spacing: 10
 

@@ -47,6 +47,8 @@ Item {
     property alias jobsModel: jobTraceView.sourceModel
     property alias frameTitle: titleText.text
 
+    onFrameStartTimeChanged: console.log("FrameStartTime " + frameStartTime)
+
     Item {
         id: topBar
         anchors {
@@ -115,6 +117,21 @@ Item {
             }
 
             AddButton {
+                id: measurerButton
+                color: "#387ee0"
+                width: 100
+                height: 30
+                anchors {
+                    right: removeButton.left
+                    rightMargin: 15
+                    verticalCenter: parent.verticalCenter
+                }
+
+                text: ":-:-:"
+                onClicked: measurer.visible = !measurer.visible
+            }
+
+            AddButton {
                 id: removeButton
                 color: "#e0c438"
                 width: 30
@@ -177,7 +194,7 @@ Item {
     }
 
     property JobHighlight jobHighLight: JobHighlight {
-        parent: pageListView
+        parent: pageSwipeView
         visible: false
         z: 5
     }
@@ -330,4 +347,126 @@ Item {
             }
         }
     }
+
+    // Time measurement
+    Item {
+        id: measurer
+        visible: false
+        readonly property real startTime: timeBar.startTime + ((timeBar.endTime - timeBar.startTime) * ((leftHandle.x + leftHandle.width) / measurer.width))
+        readonly property real endTime: timeBar.startTime + ((timeBar.endTime - timeBar.startTime) * ((rightHandle.x) / measurer.width))
+
+        anchors {
+            left: backgroundBandColumn.left
+            right: backgroundBandColumn.right
+            top: sideBar.top
+            bottom: sideBar.bottom
+        }
+
+        Rectangle {
+            id: leftHandle
+            width: 8
+            x: parent.width * 0.5 - width
+            color: leftHandleMa.containsMouse ? Qt.lighter("#464650", 1.5) :  "#464650"
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+            }
+            MouseArea {
+                id: leftHandleMa
+                drag.target: parent
+                drag.axis: Drag.XAxis
+                anchors.fill: parent
+                drag.maximumX: rightHandle.x - width
+                drag.minimumX: -width
+                hoverEnabled: true
+            }
+            Rectangle {
+                color: "#442144"
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    right: parent.right
+                }
+                width: 1
+            }
+            Text {
+                z: 1
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: -30
+                color: "white"
+                font.bold: true
+                font.pointSize: 16
+                font.italic: true
+                font.family: robotoFont.name
+                style: Text.Outline
+                styleColor: "black"
+                text: measurer.startTime.toFixed(1) + " ms"
+            }
+        }
+
+        Rectangle {
+            color: "#55454549"
+            anchors {
+                left: leftHandle.right
+                right: rightHandle.left
+                top: leftHandle.top
+                bottom: leftHandle.bottom
+            }
+            Text {
+                anchors.centerIn: parent
+                color: "white"
+                font.bold: true
+                font.pointSize: 16
+                font.italic: true
+                font.family: robotoFont.name
+                style: Text.Outline
+                styleColor: "black"
+                text: (measurer.endTime - measurer.startTime).toFixed(3) + " ms"
+            }
+        }
+
+        Rectangle {
+            id: rightHandle
+            x: parent.width * 0.5
+            width: 8
+            color: rightHandleMa.containsMouse ? Qt.lighter("#464650", 1.5) :  "#464650"
+            anchors {
+                top: parent.top
+                bottom: parent.bottom
+            }
+            MouseArea {
+                id: rightHandleMa
+                drag.target: parent
+                drag.axis: Drag.XAxis
+                anchors.fill: parent
+                drag.maximumX: measurer.width
+                drag.minimumX: leftHandle.x + width
+                hoverEnabled: true
+            }
+            Rectangle {
+                color: "#442144"
+                anchors {
+                    top: parent.top
+                    bottom: parent.bottom
+                    left: parent.left
+                }
+                width: 1
+            }
+            Text {
+                anchors.centerIn: parent
+                anchors.verticalCenterOffset: +30
+                color: "white"
+                font.bold: true
+                font.pointSize: 16
+                font.italic: true
+                font.family: robotoFont.name
+                style: Text.Outline
+                styleColor: "black"
+                text: measurer.endTime.toFixed(1) + " ms"
+                z: 1
+            }
+        }
+
+    }
+
 }

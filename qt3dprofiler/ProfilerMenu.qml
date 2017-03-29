@@ -6,11 +6,12 @@ Rectangle {
     radius: 2
 
     property int currentIndex: 0
-    color: "#3498db"
-    gradient: Gradient {
-        GradientStop { color: Qt.lighter(root.color, 1.0); position: 0.0}
-        GradientStop { color: Qt.darker(root.color, 1.25); position: 1.0}
-    }
+//    color: "#3498db"
+    color: "#303030"
+//    gradient: Gradient {
+//        GradientStop { color: Qt.lighter(root.color, 1.0); position: 0.0}
+//        GradientStop { color: Qt.darker(root.color, 1.25); position: 1.0}
+//    }
 
     signal clicked(int idx, string name)
 

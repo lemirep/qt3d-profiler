@@ -72,7 +72,7 @@ Rectangle {
         anchors.fill: parent
         hoverEnabled: true
         onEntered: {
-            var pos = pageListView.mapFromItem(ma, ma.mouseX, ma.mouseY)
+            var pos = pageSwipeView.mapFromItem(ma, ma.mouseX, ma.mouseY)
             frameView.jobHighLight.x = pos.x + 15
             frameView.jobHighLight.y = pos.y + 15
             frameView.jobHighLight.visible = true

@@ -31,7 +31,8 @@
 import QtQuick 2.7
 import QtQuick.Dialogs 1.0
 import QtQuick.Window 2.0
-import QtQuick.Controls 2.0
+import QtQuick.Controls 2.1
+import QtQuick.Controls.Material 2.1
 import QtQuick.Controls.Styles 1.4
 import QtQml.Models 2.2
 import Profiler 1.0
@@ -41,13 +42,13 @@ Window {
     visible: true
     width: Screen.desktopAvailableWidth
     height: Screen.desktopAvailableHeight
-    color: "#22313f"
+    color: "#303030"
+    title: "Qt3D Profiler"
 
     FontLoader {
         id: robotoFont
         source: "Roboto-Regular.ttf"
     }
-
 
     Component.onCompleted: {
         Singleton.debuggerConnection.host = "127.0.0.1"
@@ -75,37 +76,6 @@ Window {
         onAccepted: Singleton.addTraceFile(fileDialog.fileUrl)
     }
 
-    ListView {
-        id: pageListView
-        model: VisualItemModel {
-            JobTraceViews { id: jobTraceViews; height: ListView.view.height; width: ListView.view.width }
-            RenderViewInspector { height: ListView.view.height; width: ListView.view.width }
-            Rectangle { color: "blue"; height: ListView.view.height; width: ListView.view.width }
-        }
-        anchors {
-            top: menu.bottom
-            left: parent.left
-            right: parent.right
-            bottom: bottomBar.top
-            topMargin: 25
-        }
-        snapMode: ListView.SnapOneItem
-        orientation: ListView.Horizontal
-        preferredHighlightBegin: 0
-        preferredHighlightEnd: width
-        highlightRangeMode: ListView.StrictlyEnforceRange
-        highlightMoveDuration: -1
-        highlightMoveVelocity: -1
-    }
-
-    BottomBar {
-        id: bottomBar
-        anchors {
-            left: parent.left
-            right: parent.right
-        }
-    }
-
     ProfilerMenu {
         id: menu
         anchors {
@@ -116,10 +86,33 @@ Window {
             rightMargin: 25
             leftMargin: 25
         }
-        onClicked: pageListView.currentIndex = idx
-        currentIndex: pageListView.currentIndex
+        onClicked: pageSwipeView.currentIndex = idx
+        currentIndex: pageSwipeView.currentIndex
 
-        opacity: pageListView.currentIndex === 0 ? (jobTraceViews.contentY > 20 ? 0 : 1.0) : 1.0
+        opacity: pageSwipeView.currentIndex === 0 ? (jobTraceViews.contentY > 20 ? 0 : 1.0) : 1.0
         Behavior on opacity { OpacityAnimator { duration: 500; easing.type: Easing.InOutQuad } }
+    }
+
+    SwipeView {
+        id: pageSwipeView
+
+        anchors {
+            top: menu.bottom
+            left: parent.left
+            right: parent.right
+            bottom: bottomBar.top
+            topMargin: 25
+        }
+        JobTraceViews { id: jobTraceViews}
+        RenderViewInspector {  }
+        Rectangle { color: "blue" }
+    }
+
+    BottomBar {
+        id: bottomBar
+        anchors {
+            left: parent.left
+            right: parent.right
+        }
     }
 }

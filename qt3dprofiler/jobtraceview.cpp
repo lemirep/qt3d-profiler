@@ -14,6 +14,12 @@ JobTraceView::JobTraceView(QQuickItem *parent)
     , m_sourceModel(nullptr)
     , m_visibleJobsModel(new JobProxyModel())
 {
+    QObject::connect(&m_rebuildSlicesWatcher, &QFutureWatcherBase::finished,
+                     this, &JobTraceView::buildVisibleModel);
+    QObject::connect(&m_needToRebuildVisibleModelTimer, &QTimer::timeout,
+                     this, &JobTraceView::buildVisibleModel);
+    m_needToRebuildVisibleModelTimer.setInterval(100);
+    m_needToRebuildVisibleModelTimer.setSingleShot(true);
 }
 
 JobTraceView::~JobTraceView()
@@ -80,7 +86,9 @@ void JobTraceView::setFrameTotalDuration(qreal totalDuration)
 
 void JobTraceView::setFrameStartTime(qreal startTime)
 {
+    qDebug() << "0" << Q_FUNC_INFO << startTime;
     if (m_frameStartTime != startTime) {
+        qDebug() << Q_FUNC_INFO << startTime;
         m_frameStartTime = startTime;
         emit frameStartTimeChanged();
         m_rebuild = true;
@@ -96,11 +104,16 @@ void JobTraceView::updateVisibleModel()
     if (maxWidth != width())
         setWidth(maxWidth);
 
+    bool wasRebuilt = false;
     if (m_rebuild && m_frameTotalDuration != 0.0 && m_viewWidth != 0.0 && m_msecToPixelScale != 0.0) {
         m_rebuild = false;
+        wasRebuilt = true;
         m_slices.clear();
         m_slices.reserve(maxWidth / m_viewWidth);
         m_visibleJobsModel->clear();
+
+        if (m_rebuildSlicesWatcher.isRunning())
+            m_rebuildSlicesWatcher.cancel();
 
         std::vector<Job> &jobs = m_sourceModel->items();
         const qreal startOffset = m_frameStartTime * 0.000001;
@@ -139,35 +152,55 @@ void JobTraceView::updateVisibleModel()
 
             contentX += m_viewWidth;
         }
-        QtConcurrent::blockingMap(m_slices, buildSlice);
+        QFuture<void> future = QtConcurrent::map(m_slices, buildSlice);
+        m_rebuildSlicesWatcher.setFuture(future);
     }
 
+    // Restart timer
+    if (!wasRebuilt)
+        m_needToRebuildVisibleModelTimer.start();
+}
 
+void JobTraceView::buildVisibleModel()
+{
+    QElapsedTimer t;
+    t.start();
     // Make it so that we can see jobs for 2 * width()
     // Find jobs than range from (contentX - viewWidth * 0.5 to contentX + 1.5 * viewWidth)
-
     // in ns
     const qint64 startRangeDuration = std::max(m_viewContentX - m_viewWidth * 1.5, 0.0) / (m_msecToPixelScale * 0.000001) + m_frameStartTime;
     const qint64 endRangeDuration = (m_viewContentX + m_viewWidth * 2.5) / (m_msecToPixelScale * 0.000001) + m_frameStartTime;
 
     QVector<ModelSlice> modelActiveSlices = m_visibleJobsModel->activeSlices();
+    QVector<ModelSlice> removedSlices;
     // Remove slices that aren't visible
     for (int i = modelActiveSlices.size() - 1; i >= 0; --i) {
         const ModelSlice &slice = modelActiveSlices.at(i);
         if (slice.endRange < startRangeDuration ||
                 slice.startRange > endRangeDuration) {
-            m_visibleJobsModel->removeSlice(i);
-            modelActiveSlices.removeAt(i);
+            m_visibleJobsModel->removeSlice(i, false);
+            removedSlices.push_back(slice);
         }
     }
+    bool layoutHasChanged = !removedSlices.empty();
 
     // Add missing slices
     for (auto i = 0, c = m_slices.size(); i < c; ++i) {
         const ModelSlice &slice = m_slices.at(i);
         if (!(slice.endRange < startRangeDuration ||
-              slice.startRange > endRangeDuration) && !modelActiveSlices.contains(slice))
-            m_visibleJobsModel->addSlice(slice);
+              slice.startRange > endRangeDuration) && !removedSlices.contains(slice)) {
+            m_visibleJobsModel->addSlice(slice, false);
+            layoutHasChanged = true;
+        }
     }
+
+    // This is really slow
+    if (layoutHasChanged) {
+        m_visibleJobsModel->layoutAboutToBeChanged();
+        m_visibleJobsModel->layoutChanged();
+    }
+
+    qDebug() << t.elapsed();
 }
 
 JobProxyModel::JobProxyModel()
@@ -243,19 +276,23 @@ void JobProxyModel::clear()
     m_activeSlices.clear();
 }
 
-void JobProxyModel::addSlice(const ModelSlice &slice)
+void JobProxyModel::addSlice(const ModelSlice &slice, bool updateLayout)
 {
     m_activeSlices.push_back(slice);
+
+    if (!updateLayout)
+        return;
+
     layoutAboutToBeChanged();
     layoutChanged();
 }
 
-void JobProxyModel::removeSlice(int sliceIndex)
+void JobProxyModel::removeSlice(int sliceIndex, bool updateLayout)
 {
     Q_ASSERT(m_activeSlices.size() > sliceIndex);
     const ModelSlice &slice = m_activeSlices.takeAt(sliceIndex);
     const int indicesCount = slice.m_sourceIndices.size();
-    if (indicesCount > 0) {
+    if (updateLayout && indicesCount > 0) {
         layoutAboutToBeChanged();
         layoutChanged();
     }

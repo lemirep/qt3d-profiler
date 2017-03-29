@@ -84,6 +84,7 @@ Item {
 
         contentWidth: rowContent.width
         contentHeight: rowContent.height
+        onContentWidthChanged: console.log("Content width" + contentWidth)
 
         Row {
             id: rowContent
@@ -103,6 +104,7 @@ Item {
                         id: commandCol
                         anchors.centerIn: parent
                         spacing: 15
+                        width: childrenRect.width
                         Row {
                             spacing: 25
                             Text { text: "InstanceCount"; color: "white"; font.family: robotoFont.name }

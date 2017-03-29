@@ -5,6 +5,8 @@
 #include <QAbstractListModel>
 #include <QAbstractProxyModel>
 #include <QMutex>
+#include <QFutureWatcher>
+#include <QTimer>
 
 class JobModel;
 class QAbstractListModel;
@@ -38,8 +40,8 @@ public:
     QModelIndex mapFromSource(const QModelIndex &sourceIndex) const Q_DECL_OVERRIDE;
 
     void clear();
-    void addSlice(const ModelSlice &slice);
-    void removeSlice(int slideIndex);
+    void addSlice(const ModelSlice &slice, bool updateLayout);
+    void removeSlice(int slideIndex, bool updateLayout);
 
     QVector<ModelSlice> activeSlices() const { return m_activeSlices; }
 
@@ -96,6 +98,7 @@ Q_SIGNALS:
 
 private:
     void updateVisibleModel();
+    void buildVisibleModel();
 
     qreal m_msecToPixelScale;
     qreal m_viewContentX;
@@ -109,6 +112,8 @@ private:
     QScopedPointer<JobProxyModel> m_visibleJobsModel;
     QVector<ModelSlice> m_slices;
     QMutex m_mutex;
+    QFutureWatcher<void> m_rebuildSlicesWatcher;
+    QTimer m_needToRebuildVisibleModelTimer;
 };
 
 
