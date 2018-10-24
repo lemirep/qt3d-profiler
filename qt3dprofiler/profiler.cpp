@@ -50,7 +50,7 @@ Profiler::Profiler(QObject *parent)
 {
     QObject::connect(m_debuggerConnection.data(), &DebuggerConnection::replyReceived,
                      this, &Profiler::commandReplyReceived);
-    parseConfigFile(QLatin1Literal(":/config.json"));
+    parseConfigFile(QLatin1Literal(":/config/5.11/config.json"));
 }
 
 Profiler::~Profiler()
@@ -146,9 +146,10 @@ void Profiler::parseConfigFile(const QString &filePath)
         return;
     }
 
-    QJsonDocument jsonDoc = QJsonDocument::fromJson(configFile.readAll());
+    QJsonParseError error;
+    QJsonDocument jsonDoc = QJsonDocument::fromJson(configFile.readAll(), &error);
     if (jsonDoc.isNull() || !jsonDoc.isObject()) {
-        qWarning() << "Malformed configuration file";
+        qWarning() << "Malformed configuration file" << error.errorString();
         return;
     }
 
@@ -199,5 +200,8 @@ void Profiler::parseConfigFile(const QString &filePath)
     }
 
     // Build AspectModel based on the above
+    if (m_aspectInfoModel->rowCount() > 0)
+        m_aspectInfoModel->clear();
+
     m_aspectInfoModel->insertRows(std::move(aspectsInfo));
 }

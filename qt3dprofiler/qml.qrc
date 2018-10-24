@@ -6,7 +6,6 @@
         <file>FrameJobView.qml</file>
         <file>StyledRectText.qml</file>
         <file>JobHighlight.qml</file>
-        <file>config.json</file>
         <file>JobLegend.qml</file>
         <file>CommandTerminal.qml</file>
         <file>ProfilerMenu.qml</file>
@@ -16,5 +15,9 @@
         <file>RenderViewInspector.qml</file>
         <file>RenderView.qml</file>
         <file>JobTraceViews.qml</file>
+        <file>config/5.10/config.json</file>
+        <file>config/5.10.1/config.json</file>
+        <file>config/5.11/config.json</file>
+        <file>config/5.9.1/config.json</file>
     </qresource>
 </RCC>

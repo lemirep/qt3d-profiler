@@ -1,5 +1,5 @@
 {
-    "version": 0.1,
+    "version": 0.2,
     "aspects": [
         {
             "name": "render",
@@ -41,7 +41,7 @@
                 { "type": 35, "name": "UpdateMeshTriangleList", "color": "#C3C9C2" },
                 { "type": 36, "name": "FilterCompatibleTechniques", "color": "#C3D9A2" },
                 { "type": 37, "name": "UpdateLevelOfDetail", "color": "#C3D9A2" },
-                { "type": 38, "name": "SyncTextureLoading", "color": "#A3A9A2" }
+                { "type": 38, "name": "SyncTextureLoading", "color": "#550505" }
             ],
             "commands": [
                 { "name": "glinfo", "returnType": "text" },

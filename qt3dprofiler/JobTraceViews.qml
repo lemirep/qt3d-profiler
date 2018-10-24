@@ -131,6 +131,8 @@ Flickable {
 
         JobLegend {
             spacing: 10
+            width: parent.width - 20
+            padding: 50
             anchors.horizontalCenter: parent.horizontalCenter
         }
     }

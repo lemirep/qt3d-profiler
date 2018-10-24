@@ -38,7 +38,6 @@ import Profiler 1.0
 
 Flow {
     spacing: 250
-    width: childrenRect.width
     height: childrenRect.height
 
     Repeater {
@@ -65,7 +64,7 @@ Flow {
             Grid {
                 id: g
                 spacing: 20
-                rows: 5
+                rows: 7
 
                 Repeater {
                     model: typeInfoModel
