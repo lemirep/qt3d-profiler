@@ -193,10 +193,13 @@ Item {
         }
     }
 
-    property JobHighlight jobHighLight: JobHighlight {
-        parent: pageSwipeView
+    property alias jobHighLight: _jobHightLight
+
+    JobHighlight {
+        id: _jobHightLight
+        parent: root
         visible: false
-        z: 5
+        z: 100
     }
 
     // Show time bar
