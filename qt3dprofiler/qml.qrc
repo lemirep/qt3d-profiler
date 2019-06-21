@@ -19,5 +19,6 @@
         <file>config/5.10.1/config.json</file>
         <file>config/5.11/config.json</file>
         <file>config/5.9.1/config.json</file>
+        <file>config/5.12/config.json</file>
     </qresource>
 </RCC>

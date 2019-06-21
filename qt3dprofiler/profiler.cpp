@@ -50,7 +50,7 @@ Profiler::Profiler(QObject *parent)
 {
     QObject::connect(m_debuggerConnection.data(), &DebuggerConnection::replyReceived,
                      this, &Profiler::commandReplyReceived);
-    parseConfigFile(QLatin1Literal(":/config/5.11/config.json"));
+    parseConfigFile(QLatin1Literal(":/config/5.12/config.json"));
 }
 
 Profiler::~Profiler()

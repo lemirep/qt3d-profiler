@@ -41,6 +41,10 @@ QObject *singletonProvider(QQmlEngine *, QJSEngine *)
 
 int main(int ac, char **av)
 {
+    QGuiApplication::setApplicationName("qt3dprofiler");
+    QGuiApplication::setOrganizationName("Qt3D");
+    QGuiApplication::setApplicationVersion(QStringLiteral("1.0"));
+
     QGuiApplication app(ac, av);
     QQmlApplicationEngine engine;
     qmlRegisterType<JobTraceView>("Profiler", 1, 0, "JobTraceView");

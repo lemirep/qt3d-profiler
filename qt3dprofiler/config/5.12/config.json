@@ -1,0 +1,111 @@
+{
+    "version": 0.1,
+    "aspects": [
+        {
+            "name": "render",
+            "jobs": [
+                { "type": 1, "name": "LoadBuffer", "color": "#1abc9c" },
+                { "type": 2, "name": "FrameCleanup", "color": "#2ecc71" },
+                { "type": 3, "name": "UpdateShaderDataTransform", "color": "#3498db" },
+                { "type": 4, "name": "CalcBoundingVolume", "color": "#9b59b6" },
+                { "type": 5, "name": "CalcTriangleVolume", "color": "#34495e" },
+                { "type": 6, "name": "LoadGeometry", "color": "#f1c40f" },
+                { "type": 7, "name": "LoadScene", "color": "#e67e22" },
+                { "type": 8, "name": "LoadTextureData", "color": "#e74c3c" },
+                { "type": 9, "name": "PickBoundingVolume", "color": "#bdc3c7" },
+                { "type": 10, "name": "RayCasting", "color": "#e8c3c7" },
+                { "type": 11, "name": "RenderViewInitializer", "color": "#95a5a6" },
+                { "type": 12, "name": "UpdateTransforms", "color": "#f39c12" },
+                { "type": 13, "name": "UpdateTreeEnabled", "color": "#f39c12" },
+                { "type": 14, "name": "ExpendBoundingVolume", "color": "#d35400" },
+                { "type": 15, "name": "FrameSubmissionPart1", "color": "#1f3a96" },
+                { "type": 16, "name": "LayerFiltering", "color": "#453E4A" },
+                { "type": 17, "name": "EntityComponentTypeFiltering", "color": "#E6567A" },
+                { "type": 18, "name": "MaterialParameterGathering", "color": "#D8335B" },
+                { "type": 19, "name": "RenderViewBuilder", "color": "#025159" },
+                { "type": 20, "name": "GenericLambda", "color": "#F7E999" },
+                { "type": 21, "name": "FrustumCulling", "color": "#1DABB8" },
+                { "type": 22, "name": "LightGathering", "color": "#F9690E" },
+                { "type": 23, "name": "UpdateWorldBoundingVolumes", "color": "#00587A" },
+                { "type": 24, "name": "FrameSubmissionPart2", "color": "#2980b9" },
+                { "type": 25, "name": "DirtyBufferGathering", "color": "#C0BA78" },
+                { "type": 26, "name": "DirtyVaoGathering", "color": "#262929" },
+                { "type": 27, "name": "DirtyTextureGathering", "color": "#5659C9" },
+                { "type": 28, "name": "DirtyShaderGathering", "color": "#FABFA1" },
+                { "type": 29, "name": "SendRenderCapture", "color": "#FABEAE" },
+                { "type": 30, "name": "SendBufferCapture", "color": "#00BEAE" },
+                { "type": 31, "name": "SyncRenderViewCommandBuilding", "color": "#E94E77" },
+                { "type": 32, "name": "SyncRenderViewInitialization", "color": "#F1BBBA" },
+                { "type": 33, "name": "SyncRenderViewCommandBuilder", "color": "#D8EEE6" },
+                { "type": 34, "name": "SyncFrustumCulling", "color": "#9FF3C7" },
+                { "type": 35, "name": "ClearBufferDrawIndex", "color": "#C9C7C7" },
+                { "type": 36, "name": "UpdateMeshTriangleList", "color": "#C3C9C2" },
+                { "type": 37, "name": "FilterCompatibleTechniques", "color": "#C3D9A2" },
+                { "type": 38, "name": "UpdateLevelOfDetail", "color": "#C3D9A2" },
+                { "type": 39, "name": "SyncTextureLoading", "color": "#A3A9A2" },
+                { "type": 40, "name": "LoadSkeleton", "color": "#A1A2A3" },
+                { "type": 41, "name": "UpdateSkinningPalette", "color": "#A3A1A2" },
+                { "type": 42, "name": "ProximityFiltering", "color": "#B3C1D2" },
+                { "type": 43, "name": "SyncFilterEntityByLayer", "color": "#D3A1E2" },
+                { "type": 44, "name": "SyncMaterialGatherer", "color": "#E3A1E2" },
+                { "type": 45, "name": "UpdateLayerEntity", "color": "#0F4800" },
+                { "type": 46, "name": "SendTextureChangesToFrontend", "color": "#FFEB00" }
+            ],
+            "commands": [
+                { "name": "glinfo", "returnType": "text" },
+                { "name": "rendercommands", "returnType": "text" }
+            ]
+        },
+        {
+            "name": "input",
+            "jobs": [
+                { "type": 1024, "name": "AssignKeyboardFocus", "color": "#C0392B" },
+                { "type": 1025, "name": "KeyEventDispatcher", "color": "#D2527F" },
+                { "type": 1026, "name": "MouseEventDispatcher", "color": "#663399" },
+                { "type": 1027, "name": "UpdateAxisAction", "color": "#446CB3" },
+                { "type": 1028, "name": "DeviceProxyLoading", "color": "#443C33" },
+                { "type": 1029, "name": "AxisAccumulatorIntegration", "color": "#113C66" }
+            ]
+        },
+        {
+            "name": "logic",
+            "jobs": [
+                { "type": 2048, "name": "Callback", "color": "#019875" }
+            ]
+        },
+        {
+            "name": "core",
+            "jobs": [
+                { "type": 4096, "name": "ArbiterSync", "color": "#CFED21" }
+            ]
+        },
+        {
+            "name": "GL",
+            "jobs": [
+                { "type": 512, "name": "DrawArray", "color": "#10AADE" },
+                { "type": 513, "name": "DrawElement", "color": "#DE10A7" },
+                { "type": 514, "name": "DispatchCompute", "color": "#8B10DE" },
+                { "type": 515, "name": "StateUpdate", "color": "#1077DE" },
+                { "type": 516, "name": "UniformUpdate", "color": "#10DEC9" },
+                { "type": 517, "name": "ShaderUpdate", "color": "#10DE81" },
+                { "type": 518, "name": "TextureUpload", "color": "#D9D9A2" },
+                { "type": 519, "name": "BufferUpload", "color": "#10DE47" },
+                { "type": 520, "name": "ShaderUpload", "color": "#10DE13" },
+                { "type": 521, "name": "ClearBuffer", "color": "#8BDE10" },
+                { "type": 522, "name": "VAOUpdate", "color": "#B3B9B2" },
+                { "type": 523, "name": "VAOUpload", "color": "#BFDE10" },
+                { "type": 524, "name": "RenderTargetUpdate", "color": "#DEA710" }
+            ]
+        },
+        {
+            "name": "Animations",
+            "jobs": [
+                { "type": 8192, "name": "BuildBlendTree", "color": "#10CCDE" },
+                { "type": 8193, "name": "EvaluateBlendClipAnimator", "color": "#DECCDE" },
+                { "type": 8194, "name": "EvaluateClipAnimator", "color": "#CCCCDE" },
+                { "type": 8195, "name": "LoadAnimationClip", "color": "#10CCCC" },
+                { "type": 8196, "name": "FindRunningClipAnimator", "color": "#10DEDE" }
+            ]
+        }
+    ]
+}
