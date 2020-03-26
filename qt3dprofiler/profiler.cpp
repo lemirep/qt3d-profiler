@@ -50,7 +50,7 @@ Profiler::Profiler(QObject *parent)
 {
     QObject::connect(m_debuggerConnection.data(), &DebuggerConnection::replyReceived,
                      this, &Profiler::commandReplyReceived);
-    parseConfigFile(QLatin1Literal(":/config/5.14/config.json"));
+    parseConfigFile(QLatin1String(":/config/5.15/config.json"));
 }
 
 Profiler::~Profiler()
@@ -84,7 +84,7 @@ DebuggerConnection *Profiler::debuggerConnection() const
 
 void Profiler::addTraceFile(const QUrl &fileUrl)
 {
-    m_jobTracesModel->insertRow(std::move(JobStatsReader::readTraceFile(fileUrl)));
+    m_jobTracesModel->insertRow(JobStatsReader::readTraceFile(fileUrl));
 }
 
 void Profiler::removeTrace(int idx)
